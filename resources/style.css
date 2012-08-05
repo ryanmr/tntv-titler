@@ -1,0 +1,58 @@
+
+body {
+	font-size: 12px;
+	margin: 0; padding: 0;
+}
+
+#output {
+	padding-left: 10px;
+}
+
+#input-submit {
+	font-size: 24px;
+	display: block;
+	width: 200px;
+	margin: 20px auto;
+}
+
+#input-data {
+	width: 90%;
+	margin: 20px auto;
+	display: block;
+}
+
+#progress {
+	height: 25px;
+	background-color: #ababab;
+	margin: 10px 0 10px 0;
+	padding: 0;
+	display: block;
+	text-align: center;
+	font-size: 24px;
+	color: white;
+	text-shadow: 1px 1px 1px #999;
+}
+
+#output {
+	width: 90%;
+	margin: 20px auto;
+}
+
+input {
+	display: block;
+	width: 98%%;
+	margin: 10px;
+	padding: 3px;
+	font-size: 16px;
+	border: 0;
+}
+
+.secondary {
+	font-size: 12px;
+	color: #444;
+}
+.tertiary {
+	font-size: 12px;
+	color: #666;
+
+}

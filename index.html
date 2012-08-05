@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<link rel="stylesheet" type="text/css" href="resources/normalize.css" />
+<link rel="stylesheet" type="text/css" href="resources/style.css" />
+
+
+<script type="text/javascript" src="resources/mootools-core-1.4.5-full-nocompat.js"></script>
+
+<script type="text/javascript">
+
+(function() {
+
+var Download = new Class({
+
+	Implements: [Options, Events],
+
+	initialize: function(url, options) {
+		this.setOptions(options);
+		this.url = url;
+		var self = this;
+		this.request = new Request.JSON({
+			method: 'post',
+			url: 'process.php',
+			data: {type: 'fetch', url: url},
+			onSuccess: function(data) {self._complete(data);}
+		});
+		this.fireEvent('setup');
+	},
+
+	start: function() {
+		this.fireEvent('start');
+		this.request.post();
+	},
+
+	_complete: function(data) {
+		this.fireEvent('complete', data);
+	}
+
+});
+
+window.Download = Download;
+
+})();
+
+window.addEvent('domready', function(){
+
+	document.id('input-submit').addEvent('click', function(e){
+
+		var json = new Request.JSON({
+			url: 'process.php',
+			method: 'post',
+			data: {type: 'parse', data: document.id('input-data').get('value')},
+			onSuccess: function(data) {
+			
+				var progress = new Element('div', {id: 'progress'}).setStyle('width', '0%');
+				progress.inject(document.id('output'), 'before');
+				progress.set('tween', {unit: '%'});
+				var completed = 0;
+				var update = function() {
+					completed++
+					var percent = Math.ceil((completed / data.urls.length) * 100);
+					progress.tween('width', percent + "%");
+					progress.set('html', percent+"%");
+				}
+
+				data.urls.each(function(url){
+					var element = new Element('div');
+					element.grab(new Element('h3').set('html', url));
+					element.grab(new Element('div.status'));
+					document.id('output').grab(element);
+					var d = new Download(url, {
+						onStart: function() {
+							element.getElement('.status').set('html', 'Loading...');
+						},
+						onComplete: function(data) {
+							element.getElement('.status').dispose();
+							var mk = function(text, url) {
+								var inject = new Element('input', {type: 'text'});
+
+								inject.set('value', text);
+
+								inject.addEvent('click', function(){
+									this.set('value', '<li><a href="'+url+'">'+text+'</a></li>'+"\n");
+									this.select();
+								});
+								inject.addEvent('blur', function(){
+									this.set('value', text);
+								});
+
+								element.grab(inject);
+								return inject;
+							}
+
+							data.title.each(function(title){
+								mk(title, url);
+							});
+							data.h1.each(function(h1, index){
+								var el = mk(h1, url);
+								if (index > 6) {
+									el.addClass('tertiary');
+								} else if (index > 3) {
+									el.addClass('secondary');
+								}
+							});
+
+							update();
+
+						}
+					});
+
+					d.start();
+
+				});
+
+			}
+		});
+
+		json.post();
+		e.stop();
+
+	});
+
+});
+
+</script>
+
+</head>
+<body>
+
+<div id="container">
+
+	<div id="input-box">
+		<textarea rows="20" cols="70" id="input-data"></textarea>
+		<a href="#" id="input-submit">Submit Links</a>
+	</div>
+
+	<div id="output">
+
+	</div>
+
+</div>
+
+</body>
+</html>
