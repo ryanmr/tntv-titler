@@ -16,4 +16,4 @@ if ( $type == 'parse' ) {
   include('process/fetch.php');
 } 
 
-exit( json_encode('error' => 'no-type') );
+exit( json_encode(array('error' => 'no-type')) );
