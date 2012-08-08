@@ -1,15 +1,5 @@
 <?php
 
-/*foreach ($matches[0] as $match){
-  $html = file_get_contents($match);
-  $titles = getTextBetweenTags($html, "h1");
-  $output = getAllLinks($match, $titles);
-  foreach ($output as $o) {
-    echo "<li>".$o."</li>"; echo "\n<!-- -->\n";
-  }
-  echo "\n\n\n\n";
-}*/
-
 $url = $_POST['url'];
 
 $html = file_get_contents($url);
