@@ -54,5 +54,12 @@ input {
 .tertiary {
 	font-size: 12px;
 	color: #666;
+}
 
+.interacted {
+	opacity: .4;
+}
+
+.link-set:hover {
+	opacity: 1.0;
 }
