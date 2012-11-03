@@ -68,6 +68,7 @@ window.addEvent('domready', function(){
 
 				data.urls.each(function(url){
 					var element = new Element('div');
+					element.addClass('link-set');
 					element.grab(new Element('h3').set('html', url));
 					element.grab(new Element('div.status'));
 					document.id('output').grab(element);
@@ -88,6 +89,7 @@ window.addEvent('domready', function(){
 								});
 								inject.addEvent('blur', function(){
 									this.set('value', text);
+									element.addClass("interacted");
 								});
 
 								element.grab(inject);
