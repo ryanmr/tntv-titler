@@ -2,7 +2,7 @@
 /**
  * Get the text between an open and closing tag.
  * 
- * Note: this does not use regular expressions and replies on DOMDocument
+ * Note: this does not use regular expressions and relies on DOMDocument
  * for creating a traversible DOM.
  * This function is from: http://stackoverflow.com/questions/3299033/getting-all-values-from-h1-tags-using-php
  * 
