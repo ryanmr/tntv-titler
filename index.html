@@ -66,12 +66,26 @@ window.addEvent('domready', function(){
 					progress.set('html', percent+"%");
 				}
 
+				document.id('output2').setStyle('display', 'block');
+				var prefill = new Element('textarea');
+				prefill.set({
+					rows: "20",
+					cols: "70"
+				});
+				document.id('output2').grab(prefill);
+				function addpf(content) {
+					prefill.set('value', prefill.get('value') + content);					
+				}
+				addpf('<h3>Links</h3>\n\n<ul>\n\n');
+
 				data.urls.each(function(url){
 					var element = new Element('div');
 					element.addClass('link-set');
 					element.grab(new Element('h3').set('html', url));
 					element.grab(new Element('div.status'));
+
 					document.id('output').grab(element);
+
 					var d = new Download(url, {
 						onStart: function() {
 							element.getElement('.status').set('html', 'Loading...');
@@ -79,12 +93,14 @@ window.addEvent('domready', function(){
 						onComplete: function(data) {
 							element.getElement('.status').dispose();
 							var mk = function(text, url) {
+								text = text.trim();
 								var inject = new Element('input', {type: 'text'});
 
 								inject.set('value', text);
 
 								inject.addEvent('click', function(){
-									this.set('value', '<li><a href="'+url+'">'+text+'</a></li>'+"\n");
+									var insert = '<li><a href="'+url+'">'+text+'</a></li>'+"\n";
+									this.set('value', insert);
 									this.select();
 								});
 								inject.addEvent('blur', function(){
@@ -96,6 +112,8 @@ window.addEvent('domready', function(){
 								return inject;
 							}
 
+							var insert = data.title[0].trim();
+							addpf('<li><a href="'+url+'">'+insert+'</a></li>'+"\n");
 							data.title.each(function(title){
 								mk(title, url);
 							});
@@ -141,6 +159,10 @@ window.addEvent('domready', function(){
 
 	<div id="output">
 
+	</div>
+
+	<div id="output2" class="init-hidden">
+		
 	</div>
 
 </div>
