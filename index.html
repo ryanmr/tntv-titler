@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+
+<title>The Nexus TV Titler</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link href="resources/normalize.css" rel="stylesheet" media="screen" />
+<link rel="stylesheet" href="resources/style.css" />
+
+<script type="text/javascript" src="resources/mootools-core-1.4.5-full-nocompat-yc.js"></script>
+<script type="text/javascript" src="resources/mootools-more-1.4.0.1.js"></script>
+<script type="text/javascript" src="resources/app.js"></script>
+<script type="text/javascript">
+
+window.addEvent('domready', function(){
+	var ryan = new Orchestrator('input', 'output');
+});
+
+</script>
+
+</head>
+<body>
+
+	<div class="masthead">
+		
+		<textarea id="input" class="form" cols="70" rows="20"></textarea>
+
+	</div>
+
+	<div class="container">
+		
+		<div id="output"></div>
+
+	</div>
+
+</body>
+</html>
