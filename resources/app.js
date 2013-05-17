@@ -82,7 +82,7 @@ var Download = new Class({
 	},
 
 	_prepare: function() {
-		this.url.set('html', this.uri);
+		this.url.set('html', '<a href="'+this.uri+'" target="_blank">'+this.uri+'</a>');
 		this.status.set('html', 'Waiting...');
 	},
 
@@ -91,7 +91,7 @@ var Download = new Class({
 	},
 
 	_request_start: function() {
-		this.status.set('html', 'Searching <em>' + domain_helper(this.uri) + '</em>...');
+		this.status.set('html', 'Searching <em>' + domain_helper(this.uri) + '</em> for titles...');
 		this.element.addClass('active');
 		this.fireEvent('start');
 	},
@@ -110,7 +110,7 @@ var Download = new Class({
 	
 	_request_error: function() {
 		this.element.addClass('error').removeClass('active');
-		this.status.set('html', 'There was an error while searching ' + domain_helper(this.uri) + '</em>');
+		this.status.set('html', 'There was an error while searching <em>' + domain_helper(this.uri) + '</em>...');
 		this.fireEvent('error');
 	},
 
@@ -136,6 +136,7 @@ var Download = new Class({
 						focus: function() {
 							this.set('value', html);
 							this.select.delay(10, this);
+							parent.getElements('.interactive-link input').removeClass('picked');
 							
 						},
 						blur: function() {
@@ -199,7 +200,7 @@ var Orchestrator = new Class({
 
 	_request_success: function(json) {
 
-		var offset = 1000, additional = 300;
+		var offset = 500, additional = 500;
 
 		var pb = new ProgessBar(json.urls.length);
 		this.progress = pb;
@@ -244,12 +245,11 @@ var ProgessBar = new Class({
 		this.bar = new Element('div', {'class': 'bar'}).setStyle('width', '0%');
 		this.bar.set('tween', {unit: '%'});
 		this.element.grab(this.bar);
-
-
 	},
 
 	update: function() {
 		if (this.size > this.complete) this.complete++;
+		if (this.size < this.complete) this.fireEvent('complete');
 
 		this.percent = Math.ceil( (this.complete / this.size) * 100 );
 		this.bar.tween('width', this.percent + "%");
@@ -265,7 +265,7 @@ var ProgessBar = new Class({
 	}
 
 
-})
+});
 
 window.Download = Download;
 window.Orchestrator = Orchestrator;
