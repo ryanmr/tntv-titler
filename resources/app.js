@@ -78,6 +78,8 @@ var Download = new Class({
 		this.status = this.element.getElement('.status');
 		this.list = this.element.getElement('.urls');
 
+		this.element.store(this);
+
 		this._prepare();
 	},
 
@@ -177,6 +179,8 @@ var Orchestrator = new Class({
 			success: this._request_success.bind(this)
 		});
 
+		this.runs = 0;
+
 	},
 
 	_setup: function() {
@@ -193,12 +197,23 @@ var Orchestrator = new Class({
 
 	start: function() {
 
-		var inner = this.element.getElement('.form-wrapper-inner');
-		this.request.post({type: 'parse', data: this.form.get('value')});
+		var delay = 1;
+
+		if ( this.progress ) {
+			this.progress.element.dispose();
+			delete this.progress;
+			var items = this.output.getElements('.link-container');
+			items.nix({duration: 1000}, true);
+			delay = 1100;
+		}
+
+		this.request.post.delay(delay, this.request, {type: 'parse', data: this.form.get('value')});
 
 	},
 
 	_request_success: function(json) {
+
+		this.form.set.delay(1000, this.form, ['value', '']);
 
 		var offset = 500, additional = 500;
 

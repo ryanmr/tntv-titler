@@ -35,6 +35,9 @@ $h1 = array_filter($h1, function($str) {
 	return false;
 });
 
+$h1 = array_map('normalize_whitespace', $h1);
+$title = array_map('normalize_whitespace', $title);
+
 $json = array('h1' => $h1, 'title' => $title, 'header' => $header);
 
 exit( json_encode($json) );

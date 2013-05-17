@@ -6,6 +6,9 @@ function file_get_contents_utf8($fn) {
       return mb_convert_encoding($content, 'HTML-ENTITIES', "UTF-8");
 }
 
+function normalize_whitespace($string) {
+	return preg_replace( '/\s+/', ' ', $string );
+}
 
 
 // stuff with curl
