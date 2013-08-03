@@ -135,9 +135,11 @@ var Download = new Class({
 			var html = '<li><a href="'+url+'">'+title+'</a></li>' + "\n";
 			input.set('value', title)
 					.addEvents({
+						click: function() {
+							this.select.delay(10, this);
+						},
 						focus: function() {
 							this.set('value', html);
-							this.select.delay(10, this);
 							parent.getElements('.interactive-link input').removeClass('picked');
 							
 						},
