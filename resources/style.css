@@ -4,11 +4,23 @@ body {
 	background-color: #eee;
 }
 
-.container, .masthead {
+.container, .masthead, .footer-wrapper {
 	margin: 0 auto;
 	width: 90%;
 	max-width: 1600px;
 	min-width: 760px;
+}
+
+a {
+	color: #444;
+	text-decoration: none;
+}
+a:visited {
+	color: #333;
+}
+a:hover {
+	color: #000;
+	text-decoration: underline;
 }
 
 h1 {
@@ -42,11 +54,11 @@ h1 {
 .link-container:hover {
 	box-shadow: 2px 2px 2px rgba(0,0,0,.1);
 }
-.link-container.interacted {
+.link-container.interacted .input {
 	opacity: .5;
-	transition: opacity .6s ease-in;
+	transition: opacity .1s ease-in;
 }
-.link-container.interacted:hover {
+.link-container.interacted:hover input {
 	opacity: 1;
 	transition: opacity .1s ease-out;
 }
@@ -76,21 +88,21 @@ h1 {
 }
 
 .interactive-link {
-	font-size: 1.2em
-	margin-bottom: .75em;
+	font-size: 1.1em;
+	margin-bottom: .1em;
 }
 .interactive-link input {
 	width: 96%;
 	border: 0;
 	padding: .5em;
-	display: bock;
+	display: block;
 }
-.interactive-link input:focus {
-	outline: none;
-	font-family: "Courier New", Courier, monospace;
-}
-.interactive-link input.picked {
+
+.interactive-link input.selected {
 	font-weight: bold;
+	border-left: 4px solid #FCBC68;
+	/*background-color: #FCF1E3;*/
+	background-color: #FCF7EF;
 }
 
 .form-wrapper {
@@ -100,18 +112,21 @@ h1 {
 .form-wrapper textarea {
 	padding: .5em;
 	width: 100%;
-	display: block;
+	font-size: 1.1em;
 }
 
 .form-wrapper button {
 	margin: 1em auto;
 	padding: 1em;
-
 	display: block;
 }
 
 .form-wrapper .thankyou {
 	font-size: 20em;
+}
+
+.input-panel textarea, .output-panel textarea {
+	font-family: monospace;
 }
 
 .hidden {display: none;}
@@ -122,4 +137,9 @@ h1 {
 	margin: 1em 0 1em 0;
 	background-color: #999;
 	display: block;
+}
+
+#footer {
+	font-size: .8em;
+	text-align: center;
 }

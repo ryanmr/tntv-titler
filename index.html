@@ -12,11 +12,11 @@
 
 <script type="text/javascript" src="resources/mootools-core-1.4.5-full-nocompat-yc.js"></script>
 <script type="text/javascript" src="resources/mootools-more-1.4.0.1.js"></script>
-<script type="text/javascript" src="resources/app.js"></script>
+<script type="text/javascript" src="resources/app3.js"></script>
 <script type="text/javascript">
 
 window.addEvent('domready', function(){
-	var ryan = new Orchestrator('input', 'output');
+	var ryan = new Orchestrator('input-panel', 'output-cards', 'output-panel');
 });
 
 </script>
@@ -28,15 +28,24 @@ window.addEvent('domready', function(){
 
 	<div class="masthead">
 		
-		<textarea id="input" class="form" cols="70" rows="20"></textarea>
+		<div id="input-panel"></div>
 
 	</div>
 
 	<div class="container">
 		
-		<div id="output"></div>
+		<div id="output-cards"></div>
+
+		<div id="output-panel"></div>
 
 	</div>
+
+	<footer id="footer">
+		<div class="footer-wrapper">
+			<p>Please read the developer notes on <a href="https://github.com/ryanmr/tntv-titler">Github</a> for updates on the automated title tool.</p>
+			<p class="source-org copyright">&copy; 2014 &blacksquare; <a href="http://thenexus.tv">The Nexus</a> &blacksquare; <a href="http://ryanrampersad.com/?titler">Ryan Rampersad</a> &blacksquare; <a href="#input-panel">Top</a></p>
+		</div>
+	</footer>
 
 </body>
 </html>
