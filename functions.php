@@ -1,4 +1,38 @@
 <?php
+
+// 
+function file_get_contents_utf8($fn) {
+     $content = file_get_contents($fn);
+      return mb_convert_encoding($content, 'HTML-ENTITIES', "UTF-8");
+}
+
+function normalize_whitespace($string) {
+	return preg_replace( '/\s+/', ' ', $string );
+}
+
+
+// stuff with curl
+function getRemoteHTML($url) {
+
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+	curl_setopt($ch, CURLOPT_VERBOSE, true); 
+	curl_setopt($ch, CURLOPT_HEADER, true);
+
+	$response = curl_exec($ch);
+
+	list($header, $body) = explode("\r\n\r\n", $response, 2);
+
+	return array( 'header' => $header, 'body' => $body );
+
+}
+
+function getResponseCode($header) {
+	$parts = explode("\r\n", $header);
+	return $part[0];
+}
+
 /**
  * Get the text between an open and closing tag.
  * 
@@ -29,7 +63,7 @@ function getTextBetweenTags($string, $tagname){
  * @return returns an array of URLs found in a document string
  */
 function getLinksFromText($raw) {
-	$reg_exUrl = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
+	$reg_exUrl = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,4}(\/\S*)?/";
 
 	$matches = array();
 	preg_match_all($reg_exUrl, $raw, $matches);
