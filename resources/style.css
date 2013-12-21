@@ -4,11 +4,23 @@ body {
 	background-color: #eee;
 }
 
-.container, .masthead {
+.container, .masthead, .footer-wrapper {
 	margin: 0 auto;
 	width: 90%;
 	max-width: 1600px;
 	min-width: 760px;
+}
+
+a {
+	color: #444;
+	text-decoration: none;
+}
+a:visited {
+	color: #333;
+}
+a:hover {
+	color: #000;
+	text-decoration: underline;
 }
 
 h1 {
@@ -125,4 +137,9 @@ h1 {
 	margin: 1em 0 1em 0;
 	background-color: #999;
 	display: block;
+}
+
+#footer {
+	font-size: .8em;
+	text-align: center;
 }

@@ -150,12 +150,6 @@ var Download = new Class({
 		this.element.addClass('error').removeClass('active');
 		this.status.set('html', 'There was an error while searching <em>' + domain_helper(this.uri) + '</em>...');
 		this.fireEvent('error');
-
-		var template = create_interactive_link();
-		template.getElement('input').set('value', 'No Title Available').addEvents({click: this._link_click.bind(this)}).addClass('selected');
-
-		this.list.grab(template);
-
 	},
 
 	_request_timeout: function() {
@@ -246,9 +240,14 @@ var Orchestrator = new Class({
 		if ( this.progress ) {
 			this.progress.element.dispose();
 			delete this.progress;
-			var items = this.output.getElements('.link-container');
-			items.nix({duration: 1000}, true);
+			var items = this.output.getElements('.link-container').nix({duration: 1000}, true);
 			delay = 1100;
+
+			// also clean up output panel
+
+			this.output_panel.getElement('.form-wrapper').addClass('hidden');
+			this.output_panel.getElement('textarea').set('value', '');
+
 		}
 
 		this.request.post.delay(delay, this.request, {type: 'parse', data: this.form.get('value')});
@@ -256,8 +255,6 @@ var Orchestrator = new Class({
 	},
 
 	end: function() {
-
-		console.log("Orchestrator::end");
 
 		var output_panel = this.output_panel;
 		var textarea = output_panel.getElement('textarea');
@@ -278,17 +275,17 @@ var Orchestrator = new Class({
 
 		elements.each(function(element, i){
 
-			console.log(element);
+			var link = element.getElement('.url a');
+			var input = element.getElement('.input-link.selected');
 
-			var url = element.getElement('.url a');
-			var title = element.getElement('.input-link.selected');
+			var url = link.get('href');
 
 			var string;
 
-			if ( title && element.hasClass('error') || element.hasClass('warning') ) {
-				string = "\t<!-- " + create_tntv_string(url.get('href'), title.get('value')) + " -->";
-			} else if ( title ) {
-				string =  create_tntv_string(url.get('href'), title.get('value'));
+			if ( input ) {
+				string = create_tntv_string(url, input.get('value'));
+			} else if ( input == null ) {
+				string = "\t<!-- " + create_tntv_string(url, 'Title Not Available') + " -->";
 			} else {
 				string = "<!-- serious error -->";
 			}
@@ -297,7 +294,7 @@ var Orchestrator = new Class({
 			
 		});
 
-		textarea.set('value', textarea.get('value') + "<!-- " + (new Date()).toString() + " -->\n");
+		textarea.set('value', textarea.get('value') + "\n\n<!-- " + (new Date()).toString() + " -->\n");
 
 	},
 
