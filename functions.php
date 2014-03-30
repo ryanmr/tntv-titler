@@ -1,18 +1,34 @@
 <?php
 
-// 
+/**
+ * Gets a UTF-8 compliant remote file/page. 
+ */
 function file_get_contents_utf8($fn) {
      $content = file_get_contents($fn);
       return mb_convert_encoding($content, 'HTML-ENTITIES', "UTF-8");
 }
 
+/**
+ * Removes extra whitespace.
+ * 
+ */
 function normalize_whitespace($string) {
 	return preg_replace( '/\s+/', ' ', $string );
 }
 
+/**
+ * Removes extra whitespace.
+ * 
+ */
+function is_post($key) {
+	return isset($_POST[$key]) && !empty($_POST[$key]);
+}
 
-// stuff with curl
-function getRemoteHTML($url) {
+/**
+ * Get the remote HTML file with cURL.
+ * 
+ */
+function get_remote_html($url) {
 
 	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -28,7 +44,11 @@ function getRemoteHTML($url) {
 
 }
 
-function getResponseCode($header) {
+/**
+ * Return the response code.
+ * 
+ */
+function get_response_code($header) {
 	$parts = explode("\r\n", $header);
 	return $part[0];
 }
@@ -44,7 +64,7 @@ function getResponseCode($header) {
  * @param $tagname the name of the tag to look for in the DOM
  * @return returns an array of text strings that were found between tags
  */
-function getTextBetweenTags($string, $tagname){
+function get_text_between_tags($string, $tagname){
 		$d = new DOMDocument();
 		@$d->loadHTML($string);
 		$return = array();
@@ -62,10 +82,22 @@ function getTextBetweenTags($string, $tagname){
  * @param $raw a raw document of text to find URLs in
  * @return returns an array of URLs found in a document string
  */
-function getLinksFromText($raw) {
+function get_links_from_text($raw) {
 	$reg_exUrl = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,4}(\/\S*)?/";
 
 	$matches = array();
 	preg_match_all($reg_exUrl, $raw, $matches);
 	return $matches[0];
+}
+
+/**
+ * Removes utm_ query strings from a url.
+ *  
+ * See: http://forums.phpfreaks.com/topic/257622-remove-utm-tags-from-url-regex/
+ * 
+ * @param $url a url
+ * @return a cleaned url
+ */
+function remove_utm($url) {
+	return preg_replace("/&?utm_(.*?)\=[^&]+/","", $url);
 }

@@ -1,14 +1,16 @@
 <?php
 
+if (is_post('url') == false) {
+	exit(json_encode(array('error' => 'no url')));
+}
+
 $url = trim($_POST['url']);
 
 $html = file_get_contents_utf8($url);
-//$response = getRemoteHTML($url);
-//$html = $response['body'];
 $header = '';
 
-$h1 = getTextBetweenTags($html, 'h1');
-$title = getTextBetweenTags($html, 'title');
+$h1 = get_text_between_tags($html, 'h1');
+$title = get_text_between_tags($html, 'title');
 
 /**
  * Controls image titles.
