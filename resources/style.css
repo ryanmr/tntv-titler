@@ -109,10 +109,11 @@ h1 {
 	margin-bottom: 2em;
 }
 
-.form-wrapper textarea {
+.form-wrapper textarea, .form-wrapper .editor {
 	padding: .5em;
 	width: 100%;
 	font-size: 1.1em;
+	background-color: #fff;
 }
 
 .form-wrapper button {
@@ -125,8 +126,17 @@ h1 {
 	font-size: 20em;
 }
 
-.input-panel textarea, .output-panel textarea {
+.input-panel textarea, .output-panel textarea, .editor {
 	font-family: monospace;
+}
+
+.editor .unit.header {
+	font-size: 1.3em;
+	font-weight: bold;
+}
+.note-link-wrapper .click {
+	color: #0645AD;
+	text-decoration: underline;
 }
 
 .hidden {display: none;}
