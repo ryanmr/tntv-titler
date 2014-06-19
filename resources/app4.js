@@ -59,14 +59,17 @@ var Parser = new Class({
 
 	digest: function(matches) {
 
-		var sections = [];
 		var section_template = {
 			name: 'Links',
 			links: []
 		};
 		var section_zero = Object.clone(section_template);
 
+
+		var sections = [];
 		var current_section = section_zero;
+		sections.push(current_section);
+
 
 		matches.each(function(match, i){
 
@@ -74,9 +77,9 @@ var Parser = new Class({
 
 			if ( this.is_header(match) ) {
 
-				sections.push(current_section);
 				current_section = Object.clone(section_template);
 				current_section.name = this.format_header(match);
+				sections.push(current_section);
 
 			} else if ( this.is_url(match) ) {
 				
@@ -86,6 +89,8 @@ var Parser = new Class({
 
 
 		}, this);
+
+
 
 		return sections;
 
@@ -115,13 +120,6 @@ var Parser = new Class({
 
 });
 
-var Helper = {
-
-	wrap: function(tag, string) {
-	}
-
-};
-
 var NoteLink = new Class({
 
 	Implements: [Options, Events],
@@ -131,15 +129,28 @@ var NoteLink = new Class({
 		this.url = url;
 		this.wrapper = new Element('li', {'class': 'note-link-wrapper'});
 
+		this._setup();
+
 	},
 
-	_setup(): function() {
+	_setup: function() {
 
-		var html = '&lt;li&gt;<span class="unit link">&lt;a href="<span class="click">{item}</span>"&gt;<span class="text">sss</span>&lt;/a&gt;</span>&lt;/li&gt;';
+		var html = '<span class="tag">&lt;li&gt;</span><span class="unit anchor"><span class="tag">&lt;a href="</span><a class="click">{item}</a>"<span class="tag">&gt;</span><span class="text">&nbsp;</span><span class="tag">&lt;/a&gt;</span></span><span class="tag">&lt;/li&gt;</span>';
 		html = html.substitute({item: this.url});
-		
-		
+		this.wrapper.appendHTML(html);
 
+		this.wrapper.getElement('.click').addEvent('dblclick', this._link_dblclick.bind(this));
+
+	},
+
+	_link_dblclick: function(event){
+		var url = event.target.get('text');
+		window.open(url, '_blank');
+		event.stop();
+	},
+
+	getElement: function() {
+		return this.wrapper;
 	}
 
 
@@ -159,11 +170,11 @@ var NoteSection = new Class({
 	},
 
 	_setup: function() {
-		var header = '&lt;h3 class="{classname}"&gt;<span class="unit header">{header}</span>&lt;/h3&gt;<br />';
-		header = header.substitute({header: this.section.name, classname: this.section.name.hyphenate().camelCase()});
+		var header = '<span class="tag">&lt;h3&gt;</span><span class="unit header">{header}</span><span class="tag">&lt;/h3&gt;</span><br />';
+		header = header.substitute({header: this.section.name});
 		this.wrapper.appendHTML(header);
 
-		this.wrapper.appendHTML('&lt;<span class="subunit ul">ul</span>&gt;<br />');
+		this.wrapper.appendHTML('<span class="tag">&lt;ul&gt;</span><br />');
 
 
 		var list = new Element('ul');
@@ -178,8 +189,7 @@ var NoteSection = new Class({
 
 		this.wrapper.grab(list);
 
-		this.wrapper.appendHTML('&lt;/<span class="subunit ul">ul</span>&gt;<br />');
-
+		this.wrapper.appendHTML('<span class="tag">&lt;/ul&gt;</span><br /><br />');
 
 	},
 

@@ -134,9 +134,15 @@ h1 {
 	font-size: 1.3em;
 	font-weight: bold;
 }
+.editor .tag {
+	color: #999;
+}
 .note-link-wrapper .click {
 	color: #0645AD;
 	text-decoration: underline;
+}
+.note-link-wrapper .text {
+	color: red;
 }
 
 .hidden {display: none;}
