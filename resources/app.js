@@ -1,63 +1,141 @@
-// app.js
 
-// fades a node out and hides it completely, height/display:none style
-// based on http://seanmonstar.com/post/707205823/fade-and-destroy-elements
-Element.implement({
+(function() {
 
-	fadeout: function(duration) {
-		duration = duration || 500;
-		var el = this;
-		this.set('morph', {duration: duration})
-			.morph({opacity: 0})
-			.get('morph').chain(
-				function(){
-					el.morph({height: 0, padding: 0, margin: 0})
-					  .get('morph').chain(function(){
-					  	el.setStyle('display', 'none');
-					  });
-				}
-			);
-		return this;
+	function create_input_panel_template() {
+		var element = new Element('div', {'class': 'form-wrapper input-panel'});
+		var textarea = new Element('textarea', {'cols': 70, 'rows': 20});
+		var inner = new Element('div', {'class': 'form-wrapper-inner'});
+		var button = new Element('button', {'text': 'Transcribe'});
+		
+		textarea.set('placeholder', 'Enter show notes here...');
+		
+		inner.grab(textarea);
+		inner.grab(button);
+		element.grab(inner);
+
+		return element;
 	}
 
+	function create_output_panel_template() {
+		var element = new Element('div', {'class': 'form-wrapper output-panel'});
+		var editor = new Element('div', {'class': 'editor', 'cols': 70, 'rows': 20, 'contenteditable': true});
+		var inner = new Element('div', {'class': 'form-wrapper-inner'});
+
+		inner.grab(editor);
+		element.grab(inner);
+
+		return element;
+	}
+
+	// via http://stackoverflow.com/a/1054862
+	function to_slug(string) {
+		return string.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-');
+	}
+
+	function to_domain(url) {
+		return url.match(/:\/\/(www\.)?(.[^/:]+)/)[2];
+	}
+
+	function remove_comments(string) {
+		return string.replace(/\s*[\/]+.*/gim, '');
+	}
+
+
+var Parser = new Class({
+
+	Implements: [Options, Events],
+
+	initialize: function(options) {
+		this.setOptions(options);
+
+		this.regex = /(^#.*)|((?:http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,4}(?:\/\S*)?)/gim;
+
+	},
+
+	parse: function(string) {
+
+		var matches = string.match(this.regex);
+
+		return matches;
+
+	},
+
+	digest: function(matches) {
+
+		var section_template = {
+			name: 'Links',
+			links: []
+		};
+		var section_zero = Object.clone(section_template);
+
+
+		var sections = [];
+		var current_section = section_zero;
+		sections.push(current_section);
+
+
+		matches.each(function(match, i){
+
+			match = match.trim();
+
+			if ( this.is_header(match) ) {
+
+				current_section = Object.clone(section_template);
+				current_section.name = this.format_header(match);
+				sections.push(current_section);
+
+			} else if ( this.is_url(match) ) {
+				
+				current_section.links.push(match);
+
+			}
+
+
+		}, this);
+
+		sections = sections.filter(function(section, i) {
+
+			return section.links.length > 0;
+
+		}, this);
+
+		return sections;
+
+	},
+
+	is_url: function(string) {
+		return string.contains('://');
+	},
+
+	is_header: function(string) {
+		return string.trim().charAt(0) == '#';
+	},
+
+	format_header: function(string) {
+	  
+		string = remove_comments(string);
+
+		if ( string.charAt(0) == '#' ) {
+			string = string.substring(1);
+		}
+		if ( string.charAt(string.length-1) == ':' ) {
+			string = string.substring(0, string.length - 1);
+		}
+
+		return string;
+	},
+
+
 });
-// TODO: migrate to Fx.Slide method
 
-(function(){
+var NoteLink = new Class({
 
-function create_link_container_template() {
-
-	var container = new Element('div', {'class': 'link-container'});
-	var status = new Element('div', {'class': 'status'});
-	var url = new Element('div', {'class': 'url'});
-	var list = new Element('div', {'class': 'urls'});
-
-	container.grab(url).grab(status).grab(list);
-
-	return container;
-}
-
-function create_interactive_link() {
-
-	var container = new Element('div', {'class': 'interactive-link'});
-	var input = new Element('input', {'type': 'text', 'class': 'input-link'});
-
-	container.grab(input);
-
-	return container;
-
-}
-
-function domain_helper(url) {
-	return url.match(/:\/\/(www\.)?(.[^/:]+)/)[2];
-}
-
-var Download = new Class({
 	Implements: [Options, Events],
 
 	initialize: function(url, options) {
 		this.setOptions(options);
-		this.uri = url;
+		this.url = url;
+		this.wrapper = new Element('li', {'class': 'note-link-wrapper'});
 		this.request = new Request.JSON({
 			method: 'post',
 			url: 'process.php',
@@ -68,182 +146,274 @@ var Download = new Class({
 		this.request.addEvents({
 			request : this._request_start.bind(this),
 			success : this._request_success.bind(this),
-			error   : this._request_error.bind(this),
+			error : this._request_error.bind(this),
+			failure : this._request_failure.bind(this),
 			complete: this._request_complete.bind(this),
 			timeout : this._request_timeout.bind(this)
 		});
 
-		this.element = create_link_container_template();
-		this.url = this.element.getElement('.url');
-		this.status = this.element.getElement('.status');
-		this.list = this.element.getElement('.urls');
+		this._setup();
 
-		this.element.store(this);
-
-		this._prepare();
 	},
 
-	_prepare: function() {
-		this.url.set('html', '<a href="'+this.uri+'" target="_blank">'+this.uri+'</a>');
-		this.status.set('html', 'Waiting...');
-	},
+	_setup: function() {
 
-	start: function() {
-		this.request.post();
+		var html = '<span class="tag">&lt;li&gt;</span><span class="unit anchor"><span class="tag">&lt;a href="</span><a class="click">{url}</a>"<span class="tag">&gt;</span><span class="text"></span><span class="tag">&lt;/a&gt;</span></span><span class="tag">&lt;/li&gt;</span>';
+		html = html.substitute({url: this.url});
+		this.wrapper.appendHTML(html);
+
+		var anchor = this.wrapper.getElement('.click');
+		var fn = function(event){
+			event.stop();
+			return false;
+		};
+		anchor.addEvents({
+			'dblclick': this._link_dblclick.bind(this),
+			'dragstart': fn,
+			'selectstart': fn
+		});
+
+		this.text = this.wrapper.getElement('.text');
+
 	},
 
 	_request_start: function() {
-		this.status.set('html', 'Searching <em>' + domain_helper(this.uri) + '</em> for titles...');
-		this.element.addClass('active');
-		this.fireEvent('start');
-	},
-
-	_request_complete: function(json) {
-		this.element.addClass('complete').removeClass('active');
-		this.fireEvent('complete');
-	},
-	
-	_request_success: function(json) {
-		this.element.removeClass('warning').addClass('success');
-		this.status.fadeout.delay(750, this.status);
-		this.fireEvent('success');
-		this._populate(json);
-	},
-	
-	_request_error: function() {
-		this.element.addClass('error').removeClass('active');
-		this.status.set('html', 'There was an error while searching <em>' + domain_helper(this.uri) + '</em>...');
-		this.fireEvent('error');
+		this.text.set('html', 'Searching <em>{domain}</em>...'.substitute({domain: to_domain(this.url)}));
 	},
 
 	_request_timeout: function() {
-		this.element.addClass('timeout').addClass('warning');
-		this.status.set('html', 'Taking a while...');
-		this.fireEvent('timeout');
+		this.wrapper.addClass('timeout');
+		this.text.set('html', '<em>Taking a while...</em>');
 	},
 
-	_populate: function(data) {
-
-		var self = this;
-		var container = this.list;
-		var list = data.title.append(data.h1);
-		var parent = this.element;
-		var url = this.uri;
-		list.each(function(title){
-			var template = create_interactive_link();
-			var input = template.getElement('input');
-			var html = '<li><a href="'+url+'">'+title+'</a></li>' + "\n";
-			input.set('value', title)
-					.addEvents({
-						click: function() {
-							this.select.delay(10, this);
-						},
-						focus: function() {
-							this.set('value', html);
-							parent.getElements('.interactive-link input').removeClass('picked');
-							
-						},
-						blur: function() {
-							this.set('value', title).addClass('picked');
-							parent.addClass('interacted');
-							self.fireEvent('interacted');
-						}
-					});
-			container.grab(template);
-		});
-		
+	_request_complete: function(json) {
 	},
 
-	toElement: function() {
-		return this.element;
+	_request_error: function(text, error) {
+		this._error();
+		this.fireEvent('error');
 	},
+
+	_request_failure: function(xhr) {
+		this._error();
+		this.fireEvent('error');
+	},
+
+	_request_success: function(json) {
+		this.wrapper.addClass('success').removeClass('timeout').removeClass('active');
+		this.text.set('html', json.title[0]);
+		this.fireEvent('success');
+	},
+
+	_text_click: function(event) {
+		this.wrapper.removeClass('error').addClass('fixed');
+		this.wrapper.getElements('.comment').dispose();
+	},
+
+	_link_dblclick: function(event){
+		var url = event.target.get('text');
+		window.open(url, '_blank');
+		event.stop();
+	},
+
+	_error: function() {
+		this._add_comments();
+		this.wrapper.addClass('error').removeClass('active').removeClass('timeout');
+		this.text.set('html', 'Title Unavailable');
+		this.text.addEvent('click', this._text_click.bind(this));
+	},
+
+	_add_comments: function() {
+		this.wrapper.appendHTML('<span class="tag comment">&lt;&#33;-- </span>', 'top');
+		this.wrapper.appendHTML('<span class="tag comment"> --&gt;</span>', 'bottom');
+	},
+
+	query: function() {
+
+		this.request.post();
+
+	},
+
+	getElement: function() {
+		return this.wrapper;
+	},
+
 
 });
 
+var NoteSection = new Class({
 
+	Implements: [Options, Events],
+
+	initialize: function(section, options) {
+		this.setOptions(options);	
+		this.section = section;
+		this.wrapper = new Element('div', {'class': 'note-section-wrapper'});
+		this.note_links = [];
+
+		this._setup();
+
+	},
+
+	_setup: function() {
+		var header = '<span class="tag">&lt;h3 class="{classname}"&gt;</span><span class="unit header">{header}</span><span class="tag">&lt;/h3&gt;</span><br />';
+		header = header.substitute({header: this.section.name, classname: to_slug(this.section.name)});
+		this.wrapper.appendHTML(header);
+
+		this.wrapper.appendHTML('<span class="tag">&lt;ul&gt;</span><br />');
+
+
+		var list = new Element('ul');
+		this.section.links.each(function(link, i){
+
+			var note_link = new NoteLink(link);
+			this.note_links.push(note_link);
+
+			list.grab(note_link.getElement());
+
+
+		}, this);
+
+		this.wrapper.grab(list);
+
+		this.wrapper.appendHTML('<span class="tag">&lt;/ul&gt;</span><br /><br />');
+
+	},
+
+	getNoteLinks: function() {
+		return this.note_links;
+	},
+
+	getElement: function() {
+		return this.wrapper;
+	},
+
+});
 
 var Orchestrator = new Class({
 
 	Implements: [Options, Events],
 
-	initialize: function(form, output, options) {
+	initialize: function(input_panel, output_panel, options) {
 		this.setOptions(options);
-		this.form = document.id(form);
-		this.output = document.id(output);
+
+		this.input_panel = document.id(input_panel);
+		this.output_panel = document.id(output_panel);
+
+		
 		this._setup();
 
-		this.request = new Request.JSON({
-			method: 'post',
-			url: 'process.php', 
-		});
-
-		this.request.addEvents({
-			success: this._request_success.bind(this)
-		});
+		this.transcribe_mode = true;
 
 		this.runs = 0;
 
+		this._reset();
+
+	},
+
+	_reset: function() {
+		this.sections = [];
+		this.output_panel.getElement('.editor').empty();
+		this.input_panel.getElement('textarea').set('value', '');
+		this.progress_bar.reset();
 	},
 
 	_setup: function() {
-		this.form.set('placeholder', 'Enter show notes here...');
-		this.element = new Element('div', {'class': 'form-wrapper'});
-		var inner = new Element('div', {'class': 'form-wrapper-inner'}).wraps(this.form);
-		var submit = new Element('button', {'text': 'Parse'}).addEvent('click', this.start.bind(this));
-		inner.grab(submit);
-		
-		this.element.wraps(inner);
-
+		this.parser = new Parser();
 		this.scroll = new Fx.Scroll(window);
+		this.progress_bar = new ProgessBar();
+
+		var input_panel = create_input_panel_template();
+		input_panel.getElement('button').addEvent('click', this._button_action.bind(this));
+		this.form = input_panel.getElement('textarea');
+		this.input_panel.grab(input_panel);
+
+		var output_panel = create_output_panel_template();
+		this.output_panel.grab(output_panel);
+
+		$(this.progress_bar).inject(this.output_panel.getParent(), 'before');
+
 	},
 
-	start: function() {
+	_button_action: function() {
 
-		var delay = 1;
-
-		if ( this.progress ) {
-			this.progress.element.dispose();
-			delete this.progress;
-			var items = this.output.getElements('.link-container');
-			items.nix({duration: 1000}, true);
-			delay = 1100;
+		if ( this.transcribe_mode == true ) {
+			this.start_transcribe();
+			this.transcribe_mode = false;
+		} else {
+			this.start_reset();
+			this.transcribe_mode = true;
 		}
 
-		this.request.post.delay(delay, this.request, {type: 'parse', data: this.form.get('value')});
+	},
+
+	start_transcribe: function() {
+
+		this.input_panel.getElement('button').set('text', 'Reset');
+
+		var content = this.input_panel.getElement('textarea').get('value');
+		var matches = this.parser.parse(content);
+		var sections = this.parser.digest(matches);
+
+		this.populate(sections);
+
+		this.query();
+
+		this.scroll.toElement(this.progress_bar);
+
+		this.runs++;
 
 	},
 
-	_request_success: function(json) {
+	start_reset: function() {
+		this._reset();
 
-		this.form.set.delay(1000, this.form, ['value', '']);
+		this.input_panel.getElement('button').set('text', 'Transcribe');
 
-		var offset = 500, additional = 500;
+	},
 
-		var pb = new ProgessBar(json.urls.length);
-		this.progress = pb;
-
-		json.urls.each(function(url){
-			var download = new Download(url);
-
-			download.addEvents({
-				success: function(json) {
-					pb.update();
-				},
-				error: function(json) {
-					pb.size = pb.size - 1;
-					pb.update();
-				}
-			});
-
-			this.output.grab(download);
-			download.start.delay(offset, download);
-			offset = offset + additional;
+	populate: function(sections) {
+		var editor = this.output_panel.getElement('.editor');
+		sections.each(function(section, i){
+			var note_section = new NoteSection(section);
+			this.sections.push(note_section);
+			editor.grab(note_section.getElement());
 		}, this);
+	},
 
-		$(pb).inject(this.output.getParent(), 'before');
+	query: function() {
 
-		this.scroll.toElement(pb);
+		var progress_bar = this.progress_bar;
 
+		var offset = 350, delay = 400, count = 0;
+		this.sections.each(function(note_section, i) {
+			var note_links = note_section.getNoteLinks();
+			note_links.each(function(note_link, i) {
+
+				note_link.query.delay(delay, note_link);
+
+				note_link.addEvents({
+					success: function(json) {
+						progress_bar.update();
+					},
+					error: function(json) {
+						progress_bar.compensate();
+						progress_bar.update();
+					}
+				});
+
+				delay = delay + offset;
+				count++;
+
+			});
+		});
+
+		this.progress_bar.setSize(count);
+
+	},
+
+	end: function() {
+		
 	},
 
 });
@@ -252,21 +422,39 @@ var ProgessBar = new Class({
 
 	Implements: [Options, Events],
 
-	initialize: function(size, options) {
+	initialize: function(options) {
 		this.setOptions(options);
-		this.size = size;
+		
 		this.complete = 0;
+		this.finished = false;
 		this.percent = 0;
 
 		this.element = new Element('div', {'class': 'progress-bar'});
-		this.bar = new Element('div', {'class': 'bar'}).setStyle('width', '0%');
+		this.bar = new Element('div', {'class': 'bar'});
 		this.bar.set('tween', {unit: '%'});
 		this.element.grab(this.bar);
 	},
 
+	reset: function() {
+		this.bar.setStyle('width', '0%');
+	},
+
+	setSize: function(size) {
+		this.size = this._size = size;
+	},
+
+	compensate: function() {
+		this.size = this.size - 1;
+	},
+
 	update: function() {
 		if (this.size > this.complete) this.complete++;
-		if (this.size < this.complete) this.fireEvent('complete');
+		if (this.size <= this.complete && this.finished == false) {
+
+			this.finished = true;
+			this.fireEvent('complete');
+
+		}
 
 		this.percent = Math.ceil( (this.complete / this.size) * 100 );
 		this.bar.tween('width', this.percent + "%");
@@ -284,8 +472,9 @@ var ProgessBar = new Class({
 
 });
 
-window.Download = Download;
 window.Orchestrator = Orchestrator;
 window.ProgessBar = ProgessBar;
-	
+window.NoteSection = NoteSection;
+
+
 })();
