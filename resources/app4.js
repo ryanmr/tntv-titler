@@ -23,17 +23,25 @@
 		var element = new Element('div', {'class': 'form-wrapper output-panel'});
 		var editor = new Element('div', {'class': 'editor', 'cols': 70, 'rows': 20, 'contenteditable': true});
 		var inner = new Element('div', {'class': 'form-wrapper-inner'});
-		// var button = new Element('button', {'text': 'Transcribe'});
-		
-		// button.set('title', str);
 
-		// inner.grab(button);
 		inner.grab(editor);
 		element.grab(inner);
 
 		return element;
 	}
 
+	// via http://stackoverflow.com/a/1054862
+	function to_slug(string) {
+		return string.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-');
+	}
+
+	function to_domain(url) {
+		return url.match(/:\/\/(www\.)?(.[^/:]+)/)[2];
+	}
+
+	function remove_comments(string) {
+		return string.replace(/\s*[\/]+.*/gim, '');
+	}
 
 
 var Parser = new Class({
@@ -48,10 +56,8 @@ var Parser = new Class({
 	},
 
 	parse: function(string) {
-		// console.log(string);
 
 		var matches = string.match(this.regex);
-		// console.log(matches);
 
 		return matches;
 
@@ -90,7 +96,11 @@ var Parser = new Class({
 
 		}, this);
 
+		sections = sections.filter(function(section, i) {
 
+			return section.links.length > 0;
+
+		}, this);
 
 		return sections;
 
@@ -101,22 +111,23 @@ var Parser = new Class({
 	},
 
 	is_header: function(string) {
-		return string.contains('#');
+		return string.trim().charAt(0) == '#';
 	},
 
 	format_header: function(string) {
-	  if ( string.charAt(0) == '#' ) {
-	    string = string.substring(1);
-	  }
-	  if ( string.charAt(string.length-1) == ':' ) {
-	    string = string.substring(0, string.length - 1);
-	  }
-	  return string;
+	  
+		string = remove_comments(string);
+
+		if ( string.charAt(0) == '#' ) {
+			string = string.substring(1);
+		}
+		if ( string.charAt(string.length-1) == ':' ) {
+			string = string.substring(0, string.length - 1);
+		}
+
+		return string;
 	},
 
-
-
-	no: 1,
 
 });
 
@@ -128,6 +139,21 @@ var NoteLink = new Class({
 		this.setOptions(options);
 		this.url = url;
 		this.wrapper = new Element('li', {'class': 'note-link-wrapper'});
+		this.request = new Request.JSON({
+			method: 'post',
+			url: 'process.php',
+			data: {type: 'fetch', url: url},
+			timeout: 6.5 * 1000, 
+		});
+
+		this.request.addEvents({
+			request : this._request_start.bind(this),
+			success : this._request_success.bind(this),
+			error : this._request_error.bind(this),
+			failure : this._request_failure.bind(this),
+			complete: this._request_complete.bind(this),
+			timeout : this._request_timeout.bind(this)
+		});
 
 		this._setup();
 
@@ -135,12 +161,47 @@ var NoteLink = new Class({
 
 	_setup: function() {
 
-		var html = '<span class="tag">&lt;li&gt;</span><span class="unit anchor"><span class="tag">&lt;a href="</span><a class="click">{item}</a>"<span class="tag">&gt;</span><span class="text">&nbsp;</span><span class="tag">&lt;/a&gt;</span></span><span class="tag">&lt;/li&gt;</span>';
-		html = html.substitute({item: this.url});
+		var html = '<span class="tag">&lt;li&gt;</span><span class="unit anchor"><span class="tag">&lt;a href="</span><a class="click">{url}</a>"<span class="tag">&gt;</span><span class="text"></span><span class="tag">&lt;/a&gt;</span></span><span class="tag">&lt;/li&gt;</span>';
+		html = html.substitute({url: this.url});
 		this.wrapper.appendHTML(html);
 
 		this.wrapper.getElement('.click').addEvent('dblclick', this._link_dblclick.bind(this));
 
+		this.text = this.wrapper.getElement('.text');
+
+	},
+
+	_request_start: function() {
+		this.text.set('html', 'Searching <em>{domain}</em>...'.substitute({domain: to_domain(this.url)}));
+	},
+
+	_request_timeout: function() {
+		this.wrapper.addClass('timeout');
+		this.text.set('html', '<em>Taking a while...</em>');
+	},
+
+	_request_complete: function(json) {
+	},
+
+	_request_error: function(text, error) {
+		this._error();
+		this.fireEvent('error');
+	},
+
+	_request_failure: function(xhr) {
+		this._error();
+		this.fireEvent('error');
+	},
+
+	_request_success: function(json) {
+		this.wrapper.addClass('success').removeClass('timeout').removeClass('active');
+		this.text.set('html', json.title[0]);
+		this.fireEvent('success');
+	},
+
+	_text_click: function(event) {
+		this.wrapper.removeClass('error').addClass('fixed');
+		this.wrapper.getElements('.comment').dispose();
 	},
 
 	_link_dblclick: function(event){
@@ -149,9 +210,27 @@ var NoteLink = new Class({
 		event.stop();
 	},
 
+	_error: function() {
+		this._add_comments();
+		this.wrapper.addClass('error').removeClass('active').removeClass('timeout');
+		this.text.set('html', 'Title Unavailable');
+		this.text.addEvent('click', this._text_click.bind(this));
+	},
+
+	_add_comments: function() {
+		this.wrapper.appendHTML('<span class="tag comment">&lt;&#33;-- </span>', 'top');
+		this.wrapper.appendHTML('<span class="tag comment"> --&gt;</span>', 'bottom');
+	},
+
+	query: function() {
+
+		this.request.post();
+
+	},
+
 	getElement: function() {
 		return this.wrapper;
-	}
+	},
 
 
 });
@@ -164,14 +243,15 @@ var NoteSection = new Class({
 		this.setOptions(options);	
 		this.section = section;
 		this.wrapper = new Element('div', {'class': 'note-section-wrapper'});
+		this.note_links = [];
 
 		this._setup();
 
 	},
 
 	_setup: function() {
-		var header = '<span class="tag">&lt;h3&gt;</span><span class="unit header">{header}</span><span class="tag">&lt;/h3&gt;</span><br />';
-		header = header.substitute({header: this.section.name});
+		var header = '<span class="tag">&lt;h3 class="{classname}"&gt;</span><span class="unit header">{header}</span><span class="tag">&lt;/h3&gt;</span><br />';
+		header = header.substitute({header: this.section.name, classname: to_slug(this.section.name)});
 		this.wrapper.appendHTML(header);
 
 		this.wrapper.appendHTML('<span class="tag">&lt;ul&gt;</span><br />');
@@ -181,6 +261,7 @@ var NoteSection = new Class({
 		this.section.links.each(function(link, i){
 
 			var note_link = new NoteLink(link);
+			this.note_links.push(note_link);
 
 			list.grab(note_link.getElement());
 
@@ -193,11 +274,14 @@ var NoteSection = new Class({
 
 	},
 
+	getNoteLinks: function() {
+		return this.note_links;
+	},
+
 	getElement: function() {
 		return this.wrapper;
 	},
 
-	no: 1
 });
 
 var Orchestrator = new Class({
@@ -211,151 +295,119 @@ var Orchestrator = new Class({
 		this.output = this.output_cards = document.id(output_cards);
 		this.output_panel = document.id(output_panel);
 
+		this.parser = new Parser();
 		this._setup();
 
-		this.request = new Request.JSON({
-			method: 'post',
-			url: 'process.php', 
-		});
-
-		this.request.addEvents({
-			success: this._request_success.bind(this)
-		});
+		this.transcribe_mode = true;
 
 		this.runs = 0;
 
-		this.parser = new Parser();
-		// this.data = null;
-		this.sections = [];
+		this._reset();
 
 	},
 
+	_reset: function() {
+		this.sections = [];
+		this.output_panel.getElement('.editor').empty();
+		this.input_panel.getElement('textarea').set('value', '');
+		this.progress_bar.reset();
+	},
+
 	_setup: function() {
+		this.scroll = new Fx.Scroll(window);
+		this.progress_bar = new ProgessBar();
 
 		var input_panel = create_input_panel_template();
-		input_panel.getElement('button').addEvent('click', this.start.bind(this));
+		input_panel.getElement('button').addEvent('click', this._button_action.bind(this));
 		this.form = input_panel.getElement('textarea');
 		this.input_panel.grab(input_panel);
 
 		var output_panel = create_output_panel_template();
 		this.output_panel.grab(output_panel);
 
-		this.scroll = new Fx.Scroll(window);
+		$(this.progress_bar).inject(this.output_panel.getParent(), 'before');
+
 	},
 
-	start: function() {
+	_button_action: function() {
 
-		// var delay = 1;
+		if ( this.transcribe_mode == true ) {
+			this.start_transcribe();
+			this.transcribe_mode = false;
+		} else {
+			this.start_reset();
+			this.transcribe_mode = true;
+		}
 
-		// if ( this.progress ) {
-		// 	this.progress.element.dispose();
-		// 	delete this.progress;
-		// 	var items = this.output.getElements('.link-container').nix({duration: 1000}, true);
-		// 	delay = 1100;
+	},
 
-		// 	// also clean up output panel
+	start_transcribe: function() {
 
-		// 	this.output_panel.getElement('.form-wrapper').addClass('hidden');
-		// 	// this.output_panel.getElement('textarea').set('value', '');
-
-		// }
+		this.input_panel.getElement('button').set('text', 'Reset');
 
 		var content = this.input_panel.getElement('textarea').get('value');
 		var matches = this.parser.parse(content);
 		var sections = this.parser.digest(matches);
 
 		this.populate(sections);
-		// console.log(thsisections);
 
-		// this.request.post.delay(delay, this.request, {type: 'parse', data: this.form.get('value')});
+		this.query();
+
+		this.scroll.toElement(this.progress_bar);
+
+		this.runs++;
+
+	},
+
+	start_reset: function() {
+		this._reset();
+
+		this.input_panel.getElement('button').set('text', 'Transcribe');
 
 	},
 
 	populate: function(sections) {
+		var editor = this.output_panel.getElement('.editor');
 		sections.each(function(section, i){
 			var note_section = new NoteSection(section);
 			this.sections.push(note_section);
-			this.output_panel.getElement('.editor').grab(note_section.getElement());
+			editor.grab(note_section.getElement());
 		}, this);
+	},
+
+	query: function() {
+
+		var progress_bar = this.progress_bar;
+
+		var offset = 350, delay = 400, count = 0;
+		this.sections.each(function(note_section, i) {
+			var note_links = note_section.getNoteLinks();
+			note_links.each(function(note_link, i) {
+
+				note_link.query.delay(delay, note_link);
+
+				note_link.addEvents({
+					success: function(json) {
+						progress_bar.update();
+					},
+					error: function(json) {
+						progress_bar.compensate();
+						progress_bar.update();
+					}
+				});
+
+				delay = delay + offset;
+				count++;
+
+			});
+		});
+
+		this.progress_bar.setSize(count);
+
 	},
 
 	end: function() {
-
-		var output_panel = this.output_panel;
-		// var textarea = output_panel.getElement('textarea');
 		
-		output_panel.getElement('.form-wrapper').removeClass('hidden');
-
-	},
-
-	_process_links: function() {
-
-		var output_cards = this.output_cards;
-		var output_panel = this.output_panel;
-		var textarea = output_panel.getElement('textarea'); 
-
-		var elements = output_cards.getElements('.link-container');
-
-		textarea.set('value', '');
-
-		elements.each(function(element, i){
-
-			var link = element.getElement('.url a');
-			var input = element.getElement('.input-link.selected');
-
-			var url = link.get('href');
-
-			var string;
-
-			if ( input ) {
-				string = create_tntv_string(url, input.get('value'));
-			} else if ( input == null ) {
-				string = "\t<!-- " + create_tntv_string(url, 'Title Not Available') + " -->";
-			} else {
-				string = "<!-- serious error -->";
-			}
-
-			textarea.set('value', textarea.get('value') + string + "\n");
-			
-		});
-
-		textarea.set('value', textarea.get('value') + "\n\n<!-- " + (new Date()).toString() + " -->\n");
-
-	},
-
-	_request_success: function(json) {
-
-		this.form.set.delay(1000, this.form, ['value', '']);
-
-		var offset = 500, additional = 500;
-
-		var pb = new ProgessBar(json.urls.length);
-		this.progress = pb;
-
-		json.urls.each(function(url){
-			var download = new Download(url);
-
-			download.addEvents({
-				success: function(json) {
-					pb.update();
-				},
-				error: function(json) {
-					pb.errorAdjustSize();
-					pb.update();
-				}
-			});
-
-			this.output.grab(download);
-			download.start.delay(offset, download);
-			offset = offset + additional;
-		}, this);
-
-		$(pb).inject(this.output.getParent(), 'before');
-
-		pb.addEvent('complete', this.end.bind(this));
-
-		this.scroll.toElement(pb);
-
 	},
 
 });
@@ -364,20 +416,28 @@ var ProgessBar = new Class({
 
 	Implements: [Options, Events],
 
-	initialize: function(size, options) {
+	initialize: function(options) {
 		this.setOptions(options);
-		this.size = this._size = size;
+		
 		this.complete = 0;
 		this.finished = false;
 		this.percent = 0;
 
 		this.element = new Element('div', {'class': 'progress-bar'});
-		this.bar = new Element('div', {'class': 'bar'}).setStyle('width', '0%');
+		this.bar = new Element('div', {'class': 'bar'});
 		this.bar.set('tween', {unit: '%'});
 		this.element.grab(this.bar);
 	},
 
-	errorAdjustSize: function() {
+	reset: function() {
+		this.bar.setStyle('width', '0%');
+	},
+
+	setSize: function(size) {
+		this.size = this._size = size;
+	},
+
+	compensate: function() {
 		this.size = this.size - 1;
 	},
 
@@ -406,7 +466,6 @@ var ProgessBar = new Class({
 
 });
 
-// window.Download = Download;
 window.Orchestrator = Orchestrator;
 window.ProgessBar = ProgessBar;
 window.NoteSection = NoteSection;

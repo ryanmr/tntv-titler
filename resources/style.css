@@ -130,19 +130,52 @@ h1 {
 	font-family: monospace;
 }
 
-.editor .unit.header {
+.editor {
 	font-size: 1.3em;
+}
+
+.editor .unit.header {
+	font-size: 1.1em;
 	font-weight: bold;
 }
 .editor .tag {
 	color: #999;
 }
+.editor .note-section-wrapper:hover .tag {
+	color: #666;
+}
+.editor .note-section-wrapper li:hover .tag {
+	color: #333;
+}
+
 .note-link-wrapper .click {
 	color: #0645AD;
 	text-decoration: underline;
 }
 .note-link-wrapper .text {
-	color: red;
+	color: #111;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.note-link-wrapper.fixed, .note-link-wrapper.timeout {
+	background-color: #F8E8DD;
+}
+
+.note-link-wrapper.error {
+	background-color: #F8DDDD;
+}
+.note-link-wrapper.error .text {
+}
+
+.note-link-wrapper.active {
+	background-color: #F7F7F7;
+}
+
+.note-link-wrapper.success {
+	 background-color: #F4FDF4;
+}
+.note-link-wrapper.success .text {
 }
 
 .hidden {display: none;}
