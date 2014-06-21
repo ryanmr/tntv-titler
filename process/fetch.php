@@ -45,6 +45,4 @@ $title = array_map('normalize_whitespace', $title);
 
 $json = array('h1' => $h1, 'title' => $title);
 
-sleep(rand(1,9));
-
 exit( json_encode($json) );
