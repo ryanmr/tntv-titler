@@ -443,6 +443,9 @@ var ProgessBar = new Class({
 	},
 
 	reset: function() {
+		this.complete = 0;
+		this.finished = false;
+		this.percent = 0;
 		this.bar.setStyle('width', '0%');
 	},
 
