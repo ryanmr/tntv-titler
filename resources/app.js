@@ -158,7 +158,7 @@ var NoteLink = new Class({
 
 	_setup: function() {
 
-		var html = '<span class="tag">&lt;li&gt;</span><span class="unit anchor"><span class="tag">&lt;a href="</span><a class="click">{url}</a>"<span class="tag">&gt;</span><span class="text"></span><span class="tag">&lt;/a&gt;</span></span><span class="tag">&lt;/li&gt;</span>';
+		var html = '<span class="tag">&lt;li&gt;</span><span class="unit anchor"><span class="tag">&lt;a href="</span><a class="click">{url}</a>"<span class="tag">&gt;</span><wbr><span class="text"></span><span class="tag">&lt;/a&gt;</span></span><span class="tag">&lt;/li&gt;</span>';
 		html = html.substitute({url: this.url});
 		this.wrapper.appendHTML(html);
 
@@ -179,6 +179,7 @@ var NoteLink = new Class({
 
 	_request_start: function() {
 		this.text.set('html', 'Searching <em>{domain}</em>...'.substitute({domain: to_domain(this.url)}));
+		this.wrapper.addClass('active');
 	},
 
 	_request_timeout: function() {
@@ -200,7 +201,7 @@ var NoteLink = new Class({
 	},
 
 	_request_success: function(json) {
-		this.wrapper.addClass('success').removeClass('timeout').removeClass('active');
+		this.wrapper.addClass('success').removeClass('timeout').removeClass('error').removeClass('active');
 		this.text.set('html', json.title[0]);
 		this.fireEvent('success');
 	},
@@ -218,7 +219,7 @@ var NoteLink = new Class({
 
 	_error: function() {
 		this._add_comments();
-		this.wrapper.addClass('error').removeClass('active').removeClass('timeout');
+		this.wrapper.addClass('error').removeClass('active').removeClass('timeout').removeClass('success');
 		this.text.set('html', 'Title Unavailable');
 		this.text.addEvent('click', this._text_click.bind(this));
 	},
@@ -263,7 +264,7 @@ var NoteSection = new Class({
 		this.wrapper.appendHTML('<span class="tag">&lt;ul&gt;</span><br />');
 
 
-		var list = new Element('ul');
+		var list = new Element('ul', {'class': 'note-link-container'});
 		this.section.links.each(function(link, i){
 
 			var note_link = new NoteLink(link);
@@ -294,6 +295,8 @@ var Orchestrator = new Class({
 
 	Implements: [Options, Events],
 
+	version: '4.0.0',
+
 	initialize: function(input_panel, output_panel, options) {
 		this.setOptions(options);
 
@@ -313,7 +316,7 @@ var Orchestrator = new Class({
 
 	_reset: function() {
 		this.sections = [];
-		this.output_panel.getElement('.editor').empty();
+		this.output_panel.getElement('.editor').getChildren().nix();
 		this.input_panel.getElement('textarea').set('value', '');
 		this.progress_bar.reset();
 	},
@@ -331,7 +334,7 @@ var Orchestrator = new Class({
 		var output_panel = create_output_panel_template();
 		this.output_panel.grab(output_panel);
 
-		$(this.progress_bar).inject(this.output_panel.getParent(), 'before');
+		document.id(this.progress_bar).inject(this.output_panel.getParent(), 'before');
 
 	},
 
@@ -349,6 +352,7 @@ var Orchestrator = new Class({
 
 	start_transcribe: function() {
 
+		this.output_panel.removeClass('hidden');
 		this.input_panel.getElement('button').set('text', 'Reset');
 
 		var content = this.input_panel.getElement('textarea').get('value');
@@ -367,7 +371,7 @@ var Orchestrator = new Class({
 
 	start_reset: function() {
 		this._reset();
-
+		this.scroll.toElement(this.input_panel);
 		this.input_panel.getElement('button').set('text', 'Transcribe');
 
 	},
@@ -379,6 +383,9 @@ var Orchestrator = new Class({
 			this.sections.push(note_section);
 			editor.grab(note_section.getElement());
 		}, this);
+
+		editor.appendHTML('<br /><br /><span class="tag">&lt!-- transcribed (version {version}): {timestamp} --&gt;</span><br />'.substitute({timestamp: (new Date()).toString(), version: this.version}));
+
 	},
 
 	query: function() {

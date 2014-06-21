@@ -114,6 +114,7 @@ h1 {
 	width: 100%;
 	font-size: 1.1em;
 	background-color: #fff;
+	border: 1px solid #bbb;
 }
 
 .form-wrapper button {
@@ -148,25 +149,49 @@ h1 {
 	color: #333;
 }
 
+/* note link wrapper styles */
+
+.note-link-container {
+	list-style-type: square;
+}
+
+.note-link-wrapper {
+	padding: .25em .35em .25em .45em;
+	border-left: 5px solid #fff;
+	transition : all 400ms ease-out; 
+	-webkit-transition : all 400ms ease-out; 
+	-moz-transition : all 400ms ease-out;
+	-o-transition : all 400ms ease-out;
+}
+
+.note-link-wrapper.active {
+	border-color: #222;
+}
+
 .note-link-wrapper .click {
 	color: #0645AD;
 	text-decoration: underline;
 }
+
 .note-link-wrapper .text {
 	color: #111;
 	font-weight: bold;
 	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
-.note-link-wrapper.fixed, .note-link-wrapper.timeout {
+.note-link-wrapper.fixed,
+.note-link-wrapper.timeout {
 	background-color: #F8E8DD;
+	border-color: #D16C00;
 }
 
 .note-link-wrapper.error {
 	background-color: #F8DDDD;
+	border-color: #D10000;
 }
-.note-link-wrapper.error .text {
-}
+.note-link-wrapper.error .text {}
 
 .note-link-wrapper.active {
 	background-color: #F7F7F7;
@@ -174,9 +199,12 @@ h1 {
 
 .note-link-wrapper.success {
 	 background-color: #F4FDF4;
+	 border-color: #00D103;
 }
-.note-link-wrapper.success .text {
-}
+
+.note-link-wrapper.success .text {}
+
+/* Other */
 
 .hidden {display: none;}
 .not-hidden {display: block;}
