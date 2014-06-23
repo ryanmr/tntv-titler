@@ -112,7 +112,7 @@ var Parser = new Class({
 	},
 
 	format_header: function(string) {
-	  
+		
 		string = remove_comments(string);
 
 		if ( string.charAt(0) == '#' ) {
@@ -340,7 +340,7 @@ var Orchestrator = new Class({
 
 	_button_action: function() {
 
-		if ( this.transcribe_mode == true ) {
+		if ( this.transcribe_mode === true ) {
 			this.start_transcribe();
 			this.transcribe_mode = false;
 		} else {
@@ -459,11 +459,9 @@ var ProgessBar = new Class({
 
 	update: function() {
 		if (this.size > this.complete) this.complete++;
-		if (this.size <= this.complete && this.finished == false) {
-
+		if (this.size <= this.complete && this.finished === false) {
 			this.finished = true;
 			this.fireEvent('complete');
-
 		}
 
 		this.percent = Math.ceil( (this.complete / this.size) * 100 );
