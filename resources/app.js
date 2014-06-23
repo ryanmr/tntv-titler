@@ -37,7 +37,7 @@
 	}
 
 	function remove_comments(string) {
-		return string.replace(/\s*[\/]+.*/gim, '');
+		return string.replace(/\s*(?:\/\/)+.*/gim, '');
 	}
 
 
