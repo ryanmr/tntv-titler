@@ -48,6 +48,11 @@ var Parser = new Class({
 	initialize: function(options) {
 		this.setOptions(options);
 
+		/*
+			TODO:
+				investigate future use of more advanced regex - https://gist.github.com/dperini/729294
+				allow headers and urls to be parsed independently
+		*/
 		this.regex = /(^#.*)|((?:http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,4}(?:\/\S*)?)/gim;
 
 	},
@@ -112,7 +117,7 @@ var Parser = new Class({
 	},
 
 	format_header: function(string) {
-		
+
 		string = remove_comments(string);
 
 		if ( string.charAt(0) == '#' ) {
