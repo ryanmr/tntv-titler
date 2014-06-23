@@ -40,6 +40,10 @@
 		return string.replace(/\s*(?:\/\/)+.*/gim, '');
 	}
 
+	function remove_utm(url) {
+		return url.replace(/&?utm_(.*?)\=[^&]+/gim, '');
+	}
+
 
 var Parser = new Class({
 
@@ -91,7 +95,9 @@ var Parser = new Class({
 
 			} else if ( this.is_url(match) ) {
 				
-				current_section.links.push(match);
+				var url = this.format_link(match);
+
+				current_section.links.push(url);
 
 			}
 
@@ -130,6 +136,12 @@ var Parser = new Class({
 		return string;
 	},
 
+	format_link: function(url) {
+
+		url = remove_utm(url);
+
+		return url;
+	}
 
 });
 
@@ -300,7 +312,7 @@ var Orchestrator = new Class({
 
 	Implements: [Options, Events],
 
-	version: '4.0.0',
+	version: '4.0.1',
 
 	initialize: function(input_panel, output_panel, options) {
 		this.setOptions(options);
