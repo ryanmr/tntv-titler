@@ -3,17 +3,16 @@ tntv-titler
 
 A tool to read through show notes to get appropriate titles based on remote markup.
 
-This automated titling tool extracts:
-- title tags and their contents
-- h1 tags and their contents
-
-While pages usually have a single title tag, frequently pages misuse h1 heading tags. The titler will automatically rank alternative h1 tags down in importance going down the given page.
+This automated titling tool extracts the remote page's *title tag* primarily. While pages usually have a single title tag, frequently pages misuse h1 heading tags. The titler will automatically rank alternative h1 tags down in importance going down the given page.
 
 Usage
 -----
 
-1. Simply paste your standard raw show notes into the the textarea and _click_ **Parse**.
-2. The URLs in the show notes will be parsed from the document.
-3. Each URL will be shown inside a _card_ and below the parsed titles will be listed.
-4. To use a title, simply _click_ on it. These titles are also editable if tweaks are needed.
-5. At the end of the _card_ list, _click_ **Transcribe**, which will generate standard content for the TNTV CMS.
+To define a header in your show notes, use the pound symbol (*#*) at the beginning of the line you want to be a header. It will also remove any text after a *//* in the same line as a header, so you can use those as comments. Links below a header will be a part of that section's unordered list.
+
+If there is no leading header, a generic *Links* header is provided automatically. If there are sections that have empty lists, they are removed from the output.
+
+Examples
+--------
+
+You can look in [the examples text file](examples.txt).

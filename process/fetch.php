@@ -1,13 +1,16 @@
 <?php
 
 if (is_post('url') == false) {
-	exit(json_encode(array('error' => 'no url')));
+	die('no url');
 }
 
 $url = trim($_POST['url']);
 
 $html = file_get_contents_utf8($url);
-$header = '';
+
+if ( $html === false ) {
+	die('no response');
+}
 
 $h1 = get_text_between_tags($html, 'h1');
 $title = get_text_between_tags($html, 'title');
@@ -40,6 +43,6 @@ $h1 = array_filter($h1, function($str) {
 $h1 = array_map('normalize_whitespace', $h1);
 $title = array_map('normalize_whitespace', $title);
 
-$json = array('h1' => $h1, 'title' => $title, 'header' => $header);
+$json = array('h1' => $h1, 'title' => $title);
 
 exit( json_encode($json) );

@@ -4,8 +4,9 @@
  * Gets a UTF-8 compliant remote file/page. 
  */
 function file_get_contents_utf8($fn) {
-     $content = file_get_contents($fn);
-      return mb_convert_encoding($content, 'HTML-ENTITIES', "UTF-8");
+	$content = @file_get_contents($fn);
+	if ( $content === false ) {return false;}
+	return mb_convert_encoding($content, 'HTML-ENTITIES', "UTF-8");
 }
 
 /**

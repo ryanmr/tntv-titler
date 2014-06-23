@@ -1,0 +1,74 @@
+
+
+Roll-in // no leading # puts the following section into a generic 'Links' section
+
+Going to the Stone Arch Bridge
+https://plus.google.com/photos/103163894873322469147/albums/6026128258839130609
+
+Huge plugs for previous episodes!
+http://thenexus.tv/cs61 
+http://thenexus.tv/eb80
+
+Ryan played a game, and wrote a review
+http://ryanmr.svbtle.com/transistor 
+
+Site promo: thenexus.tv/atn128 (because of no leading http, this url is ignored)
+
+>>> what follows is a large example chunk of notes, these will be put into sections
+
+#Top News
+Apple bought Beats (the headphone maker and the online streaming service) for about $3.2 billion, which is more than any single acquisition by Apple previously
+http://www.theverge.com/2014/5/8/5696652/apple-reportedly-considering-buying-beats-electronics-for-3-2-billion 
+The Wall Street Journal says that Beats Co-founders Dr. Dre and Jimmy Iovine will join Apple as senior executives
+http://9to5mac.com/2014/05/09/dr-dre-jimmy-iovine-expected-to-become-apple-executives-as-part-of-beats-acquisition/ 
+
+#News:
+Good news for PCs, shipments are up 5% in Q1 2014 year over year
+http://thenextweb.com/insider/2014/05/08/canalys-pc-shipments-5-q1-2014-apple-still-first-tablets-account-41-laptops-take-38/ 
+Sad news for not only Google, but possibly the entire industry: Oracle won its appeal and the verdict is - APIs are copyrightable
+http://arstechnica.com/tech-policy/2014/05/oracles-java-api-code-protected-by-copyright-appeals-court-rules/ 
+Do you remember App.net? We talked about it a long time ago (April 2013 most recently), and well, it’s not looking good - they say that App.net is profiable and self-sustatining, but there will no longer be any full time employees working on the service
+http://blog.app.net/2014/05/06/app-net-state-of-the-union/ 
+
+#Phone/Carrier:
+The Moto E. That’s probably what it will be called, because, E is For Everyone? The specs are pretty dismal (cutting much more from a Moto G would be pretty tough...)
+http://9to5google.com/2014/05/09/moto-e-will-ship-in-three-colors-complete-specs-revealed/ 
+ZTE is at it again, they’ve released another version of the ZTE Open, this time called the ZTE Open C, for just $100 on eBay (please note: John Gruber bought one, so should you)
+http://recode.net/2014/05/08/zte-starts-selling-99-firefox-os-phone-in-the-u-s-via-ebay/ 
+
+#Google: // too much Google news this week (example of comments in headers)
+Google might be planning to radically overhaul not only the mobile interface of its mobile apps (Gmail, specifically) through Project Hera, but also the web version too, which a similar aesthetic
+http://9to5google.com/2014/05/10/google-reportedly-testing-redesigned-desktop-version-of-gmail/ 
+http://www.theverge.com/2014/5/10/5704452/screenshots-suggest-google-is-testing-a-completely-redesigned-gmail#233275985 
+http://www.geek.com/wp-content/uploads/2014/05/Screen3.png 
+There might be some Nexus devices headed our way for Google I/O or shortly thereafter, first, an HTC device code named “Flounder” (which has a hint of irony), and another device codenamed “Molly”; these names came from the ASOP changelog of Android 4.4.3
+http://www.androidauthority.com/htc-nexus-evidence-378838/ 
+Google Now has had yet another addition: when you search for a product at a local store online, for example, on Target.com, Google Now will pop up a card reminding you that there’s a store nearby with the product you were previously looking at
+http://thenextweb.com/google/2014/05/05/google-now-android-updated-alert-nearby-stores-products-youve-searched/ 
+Google and Intel held an event this week all about Chromebooks
+http://www.theverge.com/2014/5/6/5687518/google-and-intel-team-up-to-give-chromebooks-more-power 
+Coming later this summer, just in time for back to school, Acer and Dell will use i3-haswell chips in their Chromebooks
+Google is also saying that new models will be coming soon with Bay Trail-M chips, and while they won’t be as fast as an i3, it will allegedly get 11 hours of battery life
+A pretty underwhelming event, considering the Chromebooks didn’t actually “come out”
+Oh, and Lenovo released details about July/August launching Chromebooks, 
+http://betanews.com/2014/05/06/lenovo-announces-n20-and-n20p-chromebooks/ 
+
+
+#Apple:
+Apple is upgrading their PoS system at Apple stores from 4th generation (and sometimes earlier models in less popular stores) iPod touches, to iPhone 5S units; this will add RFID checking, chip & pin native capabilities and greatly stabilize the checkout processes
+http://9to5mac.com/2014/05/09/apple-store-employees-switching-from-ipod-touch-to-iphone-5s-for-easypay-pos-system/ 
+This weekend began a huge effort for Apple Retail Store trade-ins of old iPhone 4 and iPhone 4S units; Apple will offer a $99 and $199 credit on the trade-in of an iPhone 4 and iPhone 4S respectively towards the purchase of a 5S/C; Apple sent out emails to those people who were still unlucky enough to have an iPhone 4/S
+http://9to5mac.com/2014/05/09/apple-kicks-off-its-big-in-store-iphone-upgrade-event/ 
+Ari Partinen, a Senior Lumia Engineer with Nokia/Microsoft, has left, and has instead begun working at Apple, which could very well indicate some beyond normal pixel-counts coming down the line
+http://www.engadget.com/2014/05/09/apple-just-hired-nokias-pureview-camera-expert/ 
+
+#Microsoft:
+Microsoft has invited the press to a Microsoft Surface Event on May 20th, and they say, “Join us for a small gathering”, alluding to the alleged 7.5’’ Surface coming soon
+http://www.theverge.com/2014/5/5/5685186/microsoft-will-hold-a-small-surface-event-on-may-20th 
+
+#Other:
+Amazon is rolling out Sunday delivery to more cities, New York and LA launched last year, now you can get deliveries in 15 more cities, mostly southern cities
+http://www.theverge.com/2014/5/8/5694700/amazon-sunday-package-deliveries-expands-15-more-cities 
+
+#Plugs: // example of empty sections
+no plugs this week
