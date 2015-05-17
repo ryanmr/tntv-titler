@@ -11,14 +11,77 @@
 <link href="resources/normalize.css" rel="stylesheet" media="screen" />
 <link rel="stylesheet" href="resources/style.css" />
 
-<script type="text/javascript" src="resources/mootools-core-1.5.0-full-nocompat-yc.js"></script>
-<script type="text/javascript" src="resources/mootools-more-1.5.0.js"></script>
-<script type="text/javascript" src="resources/app.js"></script>
-<script type="text/javascript">
+<script type="text/javascript" src="resources/javascript/MooTools-Core-1.5.1-compressed.js"></script>
+<script type="text/javascript" src="resources/javascript/MooTools-More-1.5.1-compressed.js"></script>
+<script type="text/javascript" src="resources/javascript/JSXTransformer.js"></script>
+<script type="text/javascript" src="resources/javascript/react-with-addons.js"></script>
 
-window.addEvent('domready', function(){
-	var ryan = new Orchestrator('input-panel', 'output-panel');
+<script type="text/jsx">
+
+
+
+var data = {
+	links: [],
+	pairs: []
+};
+
+var InputPanel = React.createClass({
+	getInitialState: function() {
+		console.log(this.props);
+		return {
+			contents: ''
+		}
+	},
+	handleTranscribe: function() {
+		console.log(this.state.contents);
+	},
+	render: function() {
+		return (
+			<div className="input-panel form-wrapper">
+				<div className="form-wrapper-inner">
+					<textarea cols="70" rows="20" placeholder="Enter show notes here..."></textarea>
+					<button onClick={this.handleTranscribe}>Transcribe</button>
+				</div>
+			</div>
+		);
+	}
 });
+
+var OutputPanel = React.createClass({
+	getInitialState: function() {
+		var state = {
+			hidden: this.props.hidden,
+			pairs: []
+		};
+		return state;
+	},
+	render: function() {
+		console.log(this.state.hidden);
+		return (
+			!this.state.hidden ? <div className="output-panel form-wrapper">
+				<div className="form-wrapper-inner">
+					<textarea cols="70" rows="30"></textarea>
+				</div>
+			</div> : null
+		);
+	}
+});
+
+var Titler = React.createClass({
+	getInitialState: function() {
+		return {links: [], pairs: []}
+	},
+	render: function() {
+		return (
+			<div>
+				<InputPanel />
+				<OutputPanel hidden={this.state.links.length == 0 ? true : false} />
+			</div>
+		);
+	}
+});
+
+React.render(<Titler />, $('titler'));
 
 </script>
 
@@ -27,22 +90,27 @@ window.addEvent('domready', function(){
 
 	<h1>Infinite Recursion</h1>
 
-	<div class="masthead">
-		
+
+	<div class="container">
+		<div id="titler"></div>
+	</div>
+
+	<!-- <div class="masthead">
+
 		<div id="input-panel"></div>
 
 	</div>
 
 	<div class="container">
-		
+
 		<div id="output-panel" class="hidden"></div>
 
-	</div>
+	</div> -->
 
 	<footer id="footer">
 		<div class="footer-wrapper">
 			<p>Please read the developer notes on <a href="https://github.com/ryanmr/tntv-titler">Github</a> for updates on the automated title tool.</p>
-			<p class="source-org copyright">&copy; 2014 &blacksquare; <a href="http://thenexus.tv">The Nexus</a> &blacksquare; <a href="http://ryanrampersad.com/?titler">Ryan Rampersad</a> &blacksquare; <a href="#input-panel">Top</a></p>
+			<p class="source-org copyright">&copy; 2015 &blacksquare; <a href="http://thenexus.tv">The Nexus</a> &blacksquare; <a href="http://ryanrampersad.com/?titler">Ryan Rampersad</a> &blacksquare; <a href="#input-panel">Top</a></p>
 		</div>
 	</footer>
 
