@@ -82,8 +82,8 @@ h1 {
 .note-link-wrapper {
 	padding: .25em .35em .25em .45em;
 	border-left: 5px solid #fff;
-	transition : all 400ms ease-out; 
-	-webkit-transition : all 400ms ease-out; 
+	transition : all 400ms ease-out;
+	-webkit-transition : all 400ms ease-out;
 	-moz-transition : all 400ms ease-out;
 	-o-transition : all 400ms ease-out;
 }

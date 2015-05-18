@@ -11,37 +11,185 @@
 <link href="resources/normalize.css" rel="stylesheet" media="screen" />
 <link rel="stylesheet" href="resources/style.css" />
 
-<script type="text/javascript" src="resources/javascript/MooTools-Core-1.5.1-compressed.js"></script>
-<script type="text/javascript" src="resources/javascript/MooTools-More-1.5.1-compressed.js"></script>
+
 <script type="text/javascript" src="resources/javascript/JSXTransformer.js"></script>
 <script type="text/javascript" src="resources/javascript/react-with-addons.js"></script>
+<script type="text/javascript" src="resources/javascript/MooTools-Core-1.5.1-compressed.js"></script>
+<script type="text/javascript" src="resources/javascript/MooTools-More-1.5.1-compressed.js"></script>
 
 <script type="text/jsx">
 
 
+// via http://stackoverflow.com/a/1054862
+function to_slug(string) {
+	return string.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-');
+}
 
-var data = {
-	links: [],
-	pairs: []
-};
+function to_domain(url) {
+	return url.match(/:\/\/(www\.)?(.[^/:]+)/)[2];
+}
+
+function remove_comments(string) {
+	return string.replace(/\s*(?:\/\/)+.*/gim, '');
+}
+
+function remove_utm(url) {
+	return url.replace(/&?utm_(.*?)\=[^&]+/gim, '');
+}
+
+var Parser = new Class({
+
+	Implements: [Options, Events],
+
+	initialize: function(options) {
+		this.setOptions(options);
+
+		/*
+			TODO:
+				investigate future use of more advanced regex - https://gist.github.com/dperini/729294
+				allow headers and urls to be parsed independently
+		*/
+		this.regex = /(^#.*)|((?:http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,4}(?:\/\S*)?)/gim;
+
+	},
+
+	parse: function(string) {
+
+		var matches = string.match(this.regex);
+
+		if (matches == null) {
+			return [];
+		}
+
+		return matches;
+
+	},
+
+	digest: function(matches) {
+
+		var section_template = {
+			name: 'Links',
+			links: []
+		};
+		var section_zero = Object.clone(section_template);
+
+
+		var sections = [];
+		var current_section = section_zero;
+		sections.push(current_section);
+
+
+		matches.each(function(match, i){
+
+			match = match.trim();
+
+			if ( this.is_header(match) ) {
+
+				current_section = Object.clone(section_template);
+				current_section.name = this.format_header(match);
+				sections.push(current_section);
+
+			} else if ( this.is_url(match) ) {
+
+				var url = this.format_link(match);
+
+				current_section.links.push(url);
+
+			}
+
+
+		}, this);
+
+		sections = sections.filter(function(section, i) {
+
+			return section.links.length > 0;
+
+		}, this);
+
+		return sections;
+
+	},
+
+	is_url: function(string) {
+		return string.contains('://');
+	},
+
+	is_header: function(string) {
+		return string.trim().charAt(0) == '#';
+	},
+
+	format_header: function(string) {
+
+		string = remove_comments(string);
+
+		if ( string.charAt(0) == '#' ) {
+			string = string.substring(1);
+		}
+		if ( string.charAt(string.length-1) == ':' ) {
+			string = string.substring(0, string.length - 1);
+		}
+
+		return string;
+	},
+
+	format_link: function(url) {
+
+		url = remove_utm(url);
+
+		return url;
+	}
+
+});
+
+var dom = React.findDOMNode;
 
 var InputPanel = React.createClass({
 	getInitialState: function() {
-		console.log(this.props);
 		return {
-			contents: ''
+			content: ''
 		}
 	},
 	handleTranscribe: function() {
-		console.log(this.state.contents);
+		this.props.onTranscribeClick({content: dom(this.refs.content).value.trim()});
 	},
 	render: function() {
 		return (
 			<div className="input-panel form-wrapper">
 				<div className="form-wrapper-inner">
-					<textarea cols="70" rows="20" placeholder="Enter show notes here..."></textarea>
+					<textarea ref="content" cols="70" rows="20" placeholder="Enter show notes here..."></textarea>
 					<button onClick={this.handleTranscribe}>Transcribe</button>
 				</div>
+			</div>
+		);
+	}
+});
+
+var Link = React.createClass({
+	render: function() {
+		return (
+			<li>
+				<span>{"<a href=\""}</span>
+				<span>{this.props.link}</span>
+				<span>{"\"></a>"}</span>
+			</li>
+		);
+	}
+});
+
+var Section = React.createClass({
+	render: function() {
+
+		var nodes = this.props.data.links.map(function(link){
+			var child = (<Link link={link} />);
+			return child;
+		});
+
+		return (
+			<div className="note-section-wrapper">
+				<h3>{this.props.data.name}</h3>
+				<ul>
+					{nodes}
+				</ul>
 			</div>
 		);
 	}
@@ -55,27 +203,54 @@ var OutputPanel = React.createClass({
 		};
 		return state;
 	},
+	isVisible: function() {
+		return this.props.sections.length > 0;
+	},
 	render: function() {
-		console.log(this.state.hidden);
+		if (!this.isVisible()) {return null;}
+
+		var nodes = this.props.sections.map(function(section){
+			var child = (<Section key={section.id} data={section} />);
+			return child;
+		});
+
+
 		return (
-			!this.state.hidden ? <div className="output-panel form-wrapper">
+			<div className="output-panel form-wrapper">
 				<div className="form-wrapper-inner">
-					<textarea cols="70" rows="30"></textarea>
+					<div className="editor" contentEditable="true">
+					{nodes}
+					</div>
 				</div>
-			</div> : null
+			</div>
 		);
 	}
 });
 
 var Titler = React.createClass({
 	getInitialState: function() {
-		return {links: [], pairs: []}
+		return {sections: []}
+	},
+	handleTranscribeClick: function(obj) {
+
+		// how is the obj enforced?
+		var content = obj.content;
+
+		var parser = new Parser();
+		var matches = parser.parse(content);
+		var sections = parser.digest(matches);
+
+		this.setState({sections: sections});
 	},
 	render: function() {
 		return (
 			<div>
-				<InputPanel />
-				<OutputPanel hidden={this.state.links.length == 0 ? true : false} />
+				<InputPanel
+					onTranscribeClick={this.handleTranscribeClick}
+				/>
+				<OutputPanel
+					sections={this.state.sections}
+				/>
 			</div>
 		);
 	}
