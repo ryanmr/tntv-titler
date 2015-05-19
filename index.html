@@ -208,6 +208,9 @@ var Link = React.createClass({
 
 	_request_success: function(json) {
 		var text = json.title[0];
+		if (text.length > 100) {
+			text = text.substring(0, 90) + '...';
+		}
 		this.setState({
 			text: text,
 			state: 'success'
@@ -256,7 +259,7 @@ var Link = React.createClass({
 				<span className="tag">{"<li><a href=\""}</span>
 				<span><a href={this.props.link}>{this.props.link}</a></span>
 				<span className="tag">{"\">"}</span>
-				<span ref="text" className="text"><span dangerouslySetInnerHTML={{__html: this.state.text}} /></span>
+				<wbr><span ref="text" className="text"><span dangerouslySetInnerHTML={{__html: this.state.text}} /></span></wbr>
 				<span className="tag">{"</a></li>"}</span>
 				</div>
 			</li>
