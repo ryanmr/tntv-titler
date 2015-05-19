@@ -186,6 +186,8 @@ var Link = React.createClass({
 			timeout: 7 * 1000
 		});
 
+		this.props.queue.addRequest("link-" + this.props.link.length, this.request);
+
 		this.request.addEvents({
 			request : this._request_start,
 			success : this._request_success,
@@ -267,8 +269,10 @@ var Link = React.createClass({
 var Section = React.createClass({
 	render: function() {
 
+		var queue = this.props.queue;
+
 		var nodes = this.props.data.links.map(function(link){
-			var child = (<Link link={link} />);
+			var child = (<Link link={link} queue={queue} />);
 			return child;
 		}, this);
 
@@ -302,8 +306,17 @@ var OutputPanel = React.createClass({
 	render: function() {
 		if (!this.isVisible()) {return null;}
 
+		var queue = new Request.Queue({
+			stopOnFailure: false,
+			conncurrent: 2
+		});
+
 		var nodes = this.props.sections.map(function(section){
-			var child = (<Section key={this.getSectionKey(section)} data={section} />);
+			var child = (<Section
+				key={this.getSectionKey(section)}
+				data={section}
+				queue={queue}
+				/>);
 			return child;
 		}, this);
 
