@@ -175,18 +175,24 @@ function classes_to_string(cls) {
 var Link = React.createClass({
 	componentDidMount: function() {
 		console.log("componentDidMount");
-		this.fetch();
+
+		this.fetch.delay(this.props.delay, this);
+
 	},
 
 	fetch: function() {
-		this.request = new Request.JSON({
+		var request = new Request.JSON({
 			method: 'post',
 			url: 'process.php',
 			data: {type: 'fetch', url: this.props.link},
 			timeout: 7 * 1000
 		});
 
-		this.request.addEvents({
+		this.request = request;
+
+		this.props.queue.addRequest('link', request);
+
+		request.addEvents({
 			request : this._request_start,
 			success : this._request_success,
 			error : this._request_error,
@@ -196,13 +202,18 @@ var Link = React.createClass({
 		});
 
 		this.request.post();
+
 	},
 
+
+
 	_request_start: function() {
+		console.log('start');
 		var text = 'Searching <em>{domain}</em>...'.substitute({domain: to_domain(this.props.link)});
 		this.setState({
 			state: 'active',
-			text: text
+			text: text,
+			commented: false
 		});
 	},
 
@@ -211,6 +222,7 @@ var Link = React.createClass({
 		if (text.length > 100) {
 			text = text.substring(0, 90) + '...';
 		}
+		console.log('success');
 		this.setState({
 			text: text,
 			state: 'success'
@@ -236,10 +248,11 @@ var Link = React.createClass({
 	},
 
 	_error: function() {
-		// how will comments be handled? might need some additional state
+		// commented indicates that the li should show html comments
 		this.setState({
 			state: 'error',
-			text: 'Title Unavailable'
+			text: 'Title Unavailable',
+			commented: true
 		});
 	},
 
@@ -253,14 +266,19 @@ var Link = React.createClass({
 
 	render: function() {
 
+		console.log("render");
+
+		var comment_open = this.state.commented ? "<!-- " : null;
+		var comment_close = this.state.commented ? " -->" : null;
+
 		return (
 			<li className="note-link-wrapper">
 				<div className={this.state.state}>
-				<span className="tag">{"<li><a href=\""}</span>
+				<span className="tag">{comment_open}{"<li><a href=\""}</span>
 				<span><a href={this.props.link}>{this.props.link}</a></span>
 				<span className="tag">{"\">"}</span>
 				<wbr><span ref="text" className="text"><span dangerouslySetInnerHTML={{__html: this.state.text}} /></span></wbr>
-				<span className="tag">{"</a></li>"}</span>
+				<span className="tag">{"</a></li>"}{comment_close}</span>
 				</div>
 			</li>
 		);
@@ -270,8 +288,14 @@ var Link = React.createClass({
 var Section = React.createClass({
 	render: function() {
 
-		var nodes = this.props.data.links.map(function(link){
-			var child = (<Link link={link} />);
+		var queue = this.props.queue;
+
+		var delay = 350;
+		var offset = 500;
+
+		var nodes = this.props.data.links.map(function(link) {
+			var child = (<Link link={link} queue={queue} delay={delay} />);
+			delay += offset;
 			return child;
 		}, this);
 
@@ -305,8 +329,17 @@ var OutputPanel = React.createClass({
 	render: function() {
 		if (!this.isVisible()) {return null;}
 
+		var queue = new Request.Queue({
+			stopOnFailure: false,
+			conncurrent: 3
+		});
+
 		var nodes = this.props.sections.map(function(section){
-			var child = (<Section key={this.getSectionKey(section)} data={section} />);
+			var child = (<Section
+				key={this.getSectionKey(section)}
+				data={section}
+				queue={queue}
+				/>);
 			return child;
 		}, this);
 
