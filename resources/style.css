@@ -59,7 +59,7 @@ h1 {
 	font-size: 1.3em;
 }
 
-.editor .unit.header {
+.editor .header {
 	font-size: 1.1em;
 	font-weight: bold;
 }
@@ -73,22 +73,34 @@ h1 {
 	color: #333;
 }
 
+/* how could tags be hidden, and then restored to their usual state? */
+/*.editor .tag {
+		display: none;
+}
+
+.editor:hover .tag {
+		display: inline;
+}*/
+
 /* note link wrapper styles */
 
 .note-link-container {
-	list-style-type: square;
+	list-style-type: none;
+	padding-left: 0; /* changed to remove bullet points */
 }
 
-.note-link-wrapper {
+.note-link-wrapper div {
 	padding: .25em .35em .25em .45em;
+	margin: 0 2em 0 2em;
 	border-left: 5px solid #fff;
 	transition : all 400ms ease-out;
 	-webkit-transition : all 400ms ease-out;
 	-moz-transition : all 400ms ease-out;
 	-o-transition : all 400ms ease-out;
+	margin-bottom: .5em; /* changed to remove bullet points */
 }
 
-.note-link-wrapper.active {
+.note-link-wrapper .active {
 	border-color: #222;
 }
 
@@ -103,28 +115,28 @@ h1 {
 	white-space: nowrap;
 }
 
-.note-link-wrapper.fixed,
-.note-link-wrapper.timeout {
+.note-link-wrapper .fixed,
+.note-link-wrapper .timeout {
 	background-color: #F8E8DD;
 	border-color: #D16C00;
 }
 
-.note-link-wrapper.error {
+.note-link-wrapper .error {
 	background-color: #F8DDDD;
 	border-color: #D10000;
 }
-.note-link-wrapper.error .text {}
+.note-link-wrapper .error .text {}
 
-.note-link-wrapper.active {
+.note-link-wrapper .active {
 	background-color: #F7F7F7;
 }
 
-.note-link-wrapper.success {
+.note-link-wrapper .success {
 	 background-color: #F4FDF4;
 	 border-color: #00D103;
 }
 
-.note-link-wrapper.success .text {}
+.note-link-wrapper .success .text {}
 
 /* Other */
 

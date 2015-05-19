@@ -164,13 +164,101 @@ var InputPanel = React.createClass({
 	}
 });
 
+function classes_to_string(cls) {
+	var str = "";
+	cls.each(function(c){
+		str += " " + c;
+	});
+	return str;
+}
+
 var Link = React.createClass({
+	componentDidMount: function() {
+		console.log("componentDidMount");
+		this.fetch();
+	},
+
+	fetch: function() {
+		this.request = new Request.JSON({
+			method: 'post',
+			url: 'process.php',
+			data: {type: 'fetch', url: this.props.link},
+			timeout: 7 * 1000
+		});
+
+		this.request.addEvents({
+			request : this._request_start,
+			success : this._request_success,
+			error : this._request_error,
+			failure : this._request_failure,
+			complete: this._request_complete,
+			timeout : this._request_timeout
+		});
+
+		this.request.post();
+	},
+
+	_request_start: function() {
+		var text = 'Searching <em>{domain}</em>...'.substitute({domain: to_domain(this.props.link)});
+		this.setState({
+			state: 'active',
+			text: text
+		});
+	},
+
+	_request_success: function(json) {
+		var text = json.title[0];
+		this.setState({
+			text: text,
+			state: 'success'
+		});
+	},
+
+	_request_timeout: function() {
+		var text = '<em>Taking a while...</em>';
+		this.setState({
+			state: 'timeout',
+			text: text
+		});
+	},
+
+	_request_complete: function(json) {},
+
+	_request_failure: function(xhr) {
+			this._error();
+	},
+
+	_request_error: function(text, err) {
+		this._error();
+	},
+
+	_error: function() {
+		// how will comments be handled? might need some additional state
+		this.setState({
+			state: 'error',
+			text: 'Title Unavailable'
+		});
+	},
+
+	getInitialState: function() {
+		var obj = {
+			text: '',
+			state: 'idle',
+		};
+		return obj;
+	},
+
 	render: function() {
+
 		return (
-			<li>
-				<span>{"<a href=\""}</span>
-				<span>{this.props.link}</span>
-				<span>{"\"></a>"}</span>
+			<li className="note-link-wrapper">
+				<div className={this.state.state}>
+				<span className="tag">{"<li><a href=\""}</span>
+				<span><a href={this.props.link}>{this.props.link}</a></span>
+				<span className="tag">{"\">"}</span>
+				<span ref="text" className="text"><span dangerouslySetInnerHTML={{__html: this.state.text}} /></span>
+				<span className="tag">{"</a></li>"}</span>
+				</div>
 			</li>
 		);
 	}
@@ -182,12 +270,14 @@ var Section = React.createClass({
 		var nodes = this.props.data.links.map(function(link){
 			var child = (<Link link={link} />);
 			return child;
-		});
+		}, this);
 
 		return (
 			<div className="note-section-wrapper">
-				<h3>{this.props.data.name}</h3>
-				<ul>
+			<span className="tag">{"<h3>"}</span>
+			<strong className="header">{this.props.data.name}</strong>
+			<span className="tag">{"</h3>"}</span>
+				<ul className="note-link-container">
 					{nodes}
 				</ul>
 			</div>
@@ -206,13 +296,16 @@ var OutputPanel = React.createClass({
 	isVisible: function() {
 		return this.props.sections.length > 0;
 	},
+	getSectionKey(section) {
+		return section.name + "-" + section.links.length;
+	},
 	render: function() {
 		if (!this.isVisible()) {return null;}
 
 		var nodes = this.props.sections.map(function(section){
-			var child = (<Section key={section.id} data={section} />);
+			var child = (<Section key={this.getSectionKey(section)} data={section} />);
 			return child;
-		});
+		}, this);
 
 
 		return (
@@ -241,6 +334,10 @@ var Titler = React.createClass({
 		var sections = parser.digest(matches);
 
 		this.setState({sections: sections});
+
+		// how do I trigger the events now?
+		// probably, just let them go
+
 	},
 	render: function() {
 		return (
