@@ -57,8 +57,8 @@ var Parser = new Class({
 				investigate future use of more advanced regex - https://gist.github.com/dperini/729294
 				allow headers and urls to be parsed independently
 		*/
-		this.regex = /(^#.*)|((?:http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,4}(?:\/\S*)?)/gim;
-
+		// via http://stackoverflow.com/a/5289151/2496685
+		this.regex = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))/gim;
 	},
 
 	parse: function(string) {

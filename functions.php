@@ -84,8 +84,8 @@ function get_text_between_tags($string, $tagname){
  * @return returns an array of URLs found in a document string
  */
 function get_links_from_text($raw) {
-	$reg_exUrl = "/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,4}(\/\S*)?/";
-
+	// via http://stackoverflow.com/a/5289151/2496685
+	$reg_exUrl = "(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))";
 	$matches = array();
 	preg_match_all($reg_exUrl, $raw, $matches);
 	return $matches[0];
