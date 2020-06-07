@@ -5,8 +5,29 @@ if (is_post('url') == false) {
 }
 
 $url = trim($_POST['url']);
+$originalUrl = trim($_POST['url']);
 
-$html = file_get_contents_utf8($url);
+$isTwitterUrl = preg_match('/https:\/\/twitter\.com\/(.*)/i', $originalUrl, $isTwitterUrlMatches);
+
+if ($isTwitterUrl) {
+	// rewrite url
+	$slugPart = $isTwitterUrlMatches[1];
+	$url = "https://mobile.twitter.com/$slugPart";
+}
+
+$isTwitterStatus = preg_match('/https:\/\/twitter\.com\/(.*)\/status\/([0-9]*)/i', $originalUrl, $isTwitterStatusMatches);
+
+if ($isTwitterStatus) {
+	// rewrite url
+	$url = $originalUrl;
+}
+
+$html = false;
+if ($isTwitterStatus) {
+	$html = file_get_contents_utf8_advanced($url);
+} else {
+	$html = file_get_contents_utf8($url);
+}
 
 if ( $html === false ) {
 	die('no response');
@@ -42,6 +63,13 @@ $h1 = array_filter($h1, function($str) {
 
 $h1 = array_map('normalize_whitespace', $h1);
 $title = array_map('normalize_whitespace', $title);
+
+$h1 = array_map(function ($str) {
+	return wordwrap($str, 50, "\n", false);
+}, $h1);
+$title = array_map(function ($str) {
+	return wordwrap($str, 50, "\n", false);
+}, $title);
 
 $json = array('h1' => $h1, 'title' => $title);
 
