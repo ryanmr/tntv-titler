@@ -219,7 +219,8 @@ var NoteLink = new Class({
 
 	_request_success: function(json) {
 		this.wrapper.addClass('success').removeClass('timeout').removeClass('error').removeClass('active');
-		this.text.set('html', json.title[0]);
+		var text = json.title[0] ? json.title[0].replace(/\n/g, "<br />\n") : 'unknown';
+		this.text.set('html', text);
 		this.fireEvent('success');
 	},
 
