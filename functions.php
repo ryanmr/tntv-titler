@@ -10,6 +10,25 @@ function file_get_contents_utf8($fn) {
 }
 
 /**
+ * Gets a UTF-8 compliant remote file/page, advanced.
+ */
+function file_get_contents_utf8_advanced($fn) {
+	$options = array(
+		'http' => array(
+			'method' => "GET",
+			'user_agent' => "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\r\n", // i.e. Googlebot
+			'header' => "Accept-language: en\r\n"
+		)
+	);
+
+  $context = stream_context_create($options);
+  $content = file_get_contents($fn, false, $context);
+  
+	if ( $content === false ) {return false;}
+	return mb_convert_encoding($content, 'HTML-ENTITIES', "UTF-8");
+}
+
+/**
  * Removes extra whitespace.
  * 
  */
